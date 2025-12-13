@@ -16,6 +16,7 @@ export const LANGUAGES = [
 ] as const;
 
 export type LanguageCode = 'en' | 'pt' | 'es';
+export type LanguageName = 'English' | 'Português' | 'Español';
 
 // Initialize i18n
 i18n

@@ -1,53 +1,69 @@
-/* styles/globals.css */
+/* styles/globals.css - ATUALIZADO */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 0 0% 100%; /* White */
-    --foreground: 222.2 84% 4.9%; /* Black */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
+    
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%; /* Blue (Padrão) */
+    
+    --primary: 221.2 83.2% 53.3%;
     --primary-foreground: 210 40% 98%;
+    
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
+    
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
+    
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
+    
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
+    
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
+    
+    --radius: 0.75rem;
   }
 
   .dark {
-    /* Ajustes para melhor contraste no Dark Mode */
-    --background: 222.2 47.4% 11.2%; /* Deep Navy Blue/Dark Grey (Base) */
-    --foreground: 210 40% 98%; /* Near White */
-    --card: 222.2 47.4% 14%; /* Card levemente mais claro que o background */
+    --background: 222.2 47.4% 6%; /* Mais escuro para melhor contraste */
+    --foreground: 210 40% 98%;
+    
+    --card: 222.2 47.4% 10%; /* Card mais escuro */
     --card-foreground: 210 40% 98%;
-    --popover: 222.2 47.4% 14%;
+    
+    --popover: 222.2 47.4% 10%;
     --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%; /* Mantendo o Primary Blue claro para contraste */
-    --primary-foreground: 222.2 47.4% 11.2%;
+    
+    --primary: 217.2 91.2% 65%; /* Primary mais claro para contraste */
+    --primary-foreground: 222.2 47.4% 6%;
+    
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
+    
     --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted-foreground: 215 20.2% 70%; /* Texto muted mais legível */
+    
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
+    
+    --destructive: 0 62.8% 40%; /* Destructive mais visível */
     --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    
+    --border: 217.2 32.6% 20%; /* Bordas mais visíveis */
+    --input: 217.2 32.6% 20%; /* Inputs com bom contraste */
+    --ring: 217.2 91.2% 65%; /* Ring color visível */
   }
 }
 
@@ -55,8 +71,65 @@
   * {
     @apply border-border;
   }
+  
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
+  
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-muted;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/30 rounded-full;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/50;
+  }
+}
+
+@layer components {
+  /* Glass effect */
+  .glass {
+    @apply backdrop-blur-md bg-white/10 border border-white/20;
+  }
+  
+  .glass-dark {
+    @apply backdrop-blur-md bg-black/10 border border-white/10;
+  }
+  
+  /* Custom input styles */
+  .input-custom {
+    @apply bg-background/50 border-input focus:border-primary focus:ring-2 focus:ring-primary/20 
+           transition-all duration-200 placeholder:text-muted-foreground/70;
+  }
+  
+  /* Button animations */
+  .btn-hover-effect {
+    @apply transition-all duration-200 hover:scale-[1.02] active:scale-[0.98];
+  }
+  
+  /* Loading spinner */
+  .spinner {
+    @apply animate-spin rounded-full border-2 border-current border-t-transparent;
+  }
+}
+
+/* Adicione no seu CSS global se necessário */
+[data-radix-dialog-content] {
+  display: flex !important;
+  flex-direction: column !important;
+  max-height: 90vh !important;
+}
+
+.dialog-content-inner {
+  flex: 1;
+  overflow-y: auto;
 }

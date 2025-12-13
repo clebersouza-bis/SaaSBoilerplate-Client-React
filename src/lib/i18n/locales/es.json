@@ -19,7 +19,6 @@
     "preferences": "Preferencias"
   },
   "auth": {
-    "login": "Iniciar Sesión",
     "logout": "Cerrar Sesión",
     "email": "Correo Electrónico",
     "password": "Contraseña",
@@ -30,11 +29,17 @@
     "failed": "Error al iniciar sesión",
     "title": "Iniciar sesión en su cuenta",
     "emailLabel": "Dirección de correo electrónico",
-    "emailPlaceholder": "Dirección de correo electrónico",
     "passwordLabel": "Contraseña",
-    "passwordPlaceholder": "Contraseña",
     "loggingOut": "Cerrando sesión...",
-    "permissionsCount": "{{count}} permisos"
+    "permissionsCount": "{{count}} permisos",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "rememberMe": "Recordarme",
+    "orContinueWith": "O continuar con",
+    "noAccount": "¿No tienes una cuenta?",
+    "register": "Registrarse",
+    "login": "Iniciar sesión en tu cuenta",
+    "emailPlaceholder": "Ingresa tu correo electrónico",
+    "passwordPlaceholder": "Ingresa tu contraseña"
   },
   "navigation": {
     "dashboard": "Dashboard",

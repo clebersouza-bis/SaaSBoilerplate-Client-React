@@ -1,16 +1,25 @@
-// features/auth/components/LoginForm.tsx
+// features/auth/components/LoginForm.tsx - VERSÃO MODERNA
 import * as React from 'react';
 import { useState } from 'react';
+import { Eye, EyeOff, Lock, Mail, Building2, AlertCircle } from 'lucide-react';
 import { useAuthStore } from '../stores/auth.store';
 import { login } from '../api/auth.api';
-import { useTranslation } from '@/hooks/useTranslation'; // Hook atualizado
+import { useTranslation } from '@/hooks/useTranslation';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Separator } from '@/components/ui/separator';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { ThemeToggle } from '@/components/layout/ThemeToggle';
 
 export function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  
+
   const { login: storeLogin } = useAuthStore();
   const { t } = useTranslation();
 
@@ -28,77 +37,282 @@ export function LoginForm() {
         userId: result.userId,
         name: result.name,
       });
-      
+
       // Redirect to dashboard
       window.location.href = '/';
     } catch (err: any) {
-      // Usando a função t com fallback
       setError(err.response?.data?.message || t('auth.invalidCredentials'));
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleForgotPassword = () => {
+    console.log('Forgot password clicked');
+    // Implementar navegação para recuperação de senha
+    // window.location.href = '/forgot-password';
+  };
+
+  const handleRegister = () => {
+    console.log('Register clicked');
+    // Implementar navegação para registro
+    // window.location.href = '/register';
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            {t('auth.login')}
-          </h2>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/30 p-4">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-secondary/10 rounded-full blur-3xl" />
+      </div>
+
+      <div className="relative w-full max-w-md">
+        {/* Language & Theme Toggle */}
+        <div className="absolute top-0 right-0 flex items-center gap-2 z-10">
+          <LanguageSwitcher />
+          {useTranslation().currentLanguage}
+          <ThemeToggle />
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <label htmlFor="email-address" className="sr-only">
-                {t('auth.email')}
-              </label>
-              <input
-                id="email-address"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder={t('auth.email')}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
+
+        {/* Login Card */}
+        <div className="bg-card/80 backdrop-blur-sm border border-border rounded-2xl shadow-2xl p-8 space-y-6">
+          {/* Branding */}
+          <div className="text-center space-y-4">
+            <div className="flex justify-center items-center gap-3">
+              <div className="h-12 w-12 bg-primary rounded-xl flex items-center justify-center">
+                <Building2 className="h-6 w-6 text-white" />
+              </div>
+              <div className="text-left">
+                <h1 className="text-2xl font-bold tracking-tight">BIS Core</h1>
+                <p className="text-sm text-muted-foreground">Professional Edition</p>
+              </div>
             </div>
+
             <div>
-              <label htmlFor="password" className="sr-only">
-                {t('auth.password')}
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder={t('auth.password')}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
+              <h2 className="text-2xl font-semibold tracking-tight">
+                {t('auth.login')}
+              </h2>
             </div>
           </div>
 
+          {/* Error Message */}
           {error && (
-            <div className="text-red-600 text-sm text-center">
-              {error}
+            <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 text-destructive" />
+              <p className="text-sm text-destructive">{error}</p>
             </div>
           )}
 
-          <div>
-            <button
+          {/* Login Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Email Field */}
+            <div className="space-y-2">
+              <label htmlFor="email" className="text-sm font-medium">
+                {t('auth.email')}
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder={t('auth.emailPlaceholder')}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="pl-10 bg-background/50 border-input focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  disabled={isLoading}
+                />
+              </div>
+            </div>
+
+            {/* Password Field */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label htmlFor="password" className="text-sm font-medium">
+                  {t('auth.password')}
+                </label>
+                <button
+                  type="button"
+                  onClick={handleForgotPassword}
+                  className="text-xs text-primary hover:text-primary/80 transition-colors"
+                  disabled={isLoading}
+                >
+                  {t('auth.forgotPassword')}
+                </button>
+              </div>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder={t('auth.passwordPlaceholder')}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="pl-10 pr-10 bg-background/50 border-input focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  disabled={isLoading}
+                />
+                <button
+                  type="button"
+                  onClick={togglePasswordVisibility}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                  disabled={isLoading}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Remember Me */}
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="remember-me"
+                checked={rememberMe}
+                onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                disabled={isLoading}
+              />
+              <label
+                htmlFor="remember-me"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                {t('auth.rememberMe')}
+              </label>
+            </div>
+
+            {/* Submit Button */}
+            <Button
               type="submit"
+              className="w-full h-11"
               disabled={isLoading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? t('auth.signingIn') : t('auth.signIn')}
-            </button>
+              {isLoading ? (
+                <>
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent mr-2" />
+                  {t('auth.signingIn')}
+                </>
+              ) : (
+                t('auth.signIn')
+              )}
+            </Button>
+          </form>
+
+          {/* Divider */}
+          <div className="relative">
+            <Separator />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="bg-card px-3 text-xs text-muted-foreground">
+                {t('auth.orContinueWith')}
+              </span>
+            </div>
           </div>
-        </form>
+
+          {/* Social Login (opcional) */}
+          <div className="grid grid-cols-2 gap-3">
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => console.log('Google login')}
+              disabled={isLoading}
+            >
+              <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+                <path
+                  fill="currentColor"
+                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                />
+                <path
+                  fill="currentColor"
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                />
+                <path
+                  fill="currentColor"
+                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                />
+                <path
+                  fill="currentColor"
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                />
+              </svg>
+              Google
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => console.log('Microsoft login')}
+              disabled={isLoading}
+            >
+              <svg className="mr-2 h-4 w-4" viewBox="0 0 23 23">
+                <path fill="#f3f3f3" d="M0 0h23v23H0z" />
+                <path fill="#f35325" d="M1 1h10v10H1z" />
+                <path fill="#81bc06" d="M12 1h10v10H12z" />
+                <path fill="#05a6f0" d="M1 12h10v10H1z" />
+                <path fill="#ffba08" d="M12 12h10v10H12z" />
+              </svg>
+              Microsoft
+            </Button>
+          </div>
+
+          {/* Register Link */}
+          <div className="text-center">
+            <p className="text-sm text-muted-foreground">
+              {t('auth.noAccount')}{' '}
+              <button
+                type="button"
+                onClick={handleRegister}
+                className="text-primary hover:text-primary/80 font-medium transition-colors"
+                disabled={isLoading}
+              >
+                {t('auth.register')}
+              </button>
+            </p>
+          </div>
+
+          {/* Footer */}
+          <div className="pt-4 border-t border-border">
+            <div className="text-xs text-muted-foreground text-center space-y-1">
+              <p>© {new Date().getFullYear()} BIS Corporation. All rights reserved.</p>
+              <div className="flex justify-center gap-4">
+                <button className="hover:text-foreground transition-colors">
+                  Privacy Policy
+                </button>
+                <button className="hover:text-foreground transition-colors">
+                  Terms of Service
+                </button>
+                <button className="hover:text-foreground transition-colors">
+                  Support
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Demo Credentials (apenas para desenvolvimento) */}
+        {import.meta.env.DEV && (
+          <div className="mt-6 p-4 bg-muted/30 border border-border rounded-lg">
+            <h4 className="text-sm font-medium mb-2">Demo Credentials</h4>
+            <div className="space-y-1 text-xs text-muted-foreground">
+              <p>Email: demo@bis.com</p>
+              <p>Password: demo123</p>
+              <button
+                onClick={() => {
+                  setEmail('demo@bis.com');
+                  setPassword('demo123');
+                }}
+                className="text-primary hover:text-primary/80 mt-2"
+              >
+                Preencher credenciais
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

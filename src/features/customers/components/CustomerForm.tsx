@@ -1,9 +1,23 @@
-// features/customers/components/CustomerForm.tsx
+// features/customers/components/CustomerForm.tsx - VERSÃO MODERNA
 import * as React from 'react';
 import { useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import {
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  Building,
+  FileText,
+  Navigation,
+  Home,
+  Globe,
+  Save,
+  X,
+  Loader2
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -23,14 +37,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 import type { Customer, CreateCustomerDto, UpdateCustomerDto } from '@/types/customer';
 import { useTranslation } from '@/hooks/useTranslation';
 
 // Schema de validação com mensagens traduzidas
-const createCustomerFormSchema = (t: (key: string) => string) => {
+const createCustomerFormSchema = (t: (key: string, params?: Record<string, any>) => string) => {
   return z.object({
     name: z.string().min(2, {
-      message: t('form.minLength')
+      message: t('form.minLength', { count: 2 })
     }),
     email: z.string().email({
       message: t('form.invalidEmail')
@@ -103,7 +120,7 @@ export function CustomerForm({
         zipCode: '',
         complement: '',
         county: '',
-        country: 'US', // Default
+        country: 'USA',
       },
     },
   });
@@ -125,7 +142,7 @@ export function CustomerForm({
           zipCode: customer.address.zipCode,
           complement: customer.address.complement || '',
           county: customer.address.county || '',
-          country: customer.address.country || 'US',
+          country: customer.address.country || 'USA',
         },
       });
     }
@@ -139,51 +156,44 @@ export function CustomerForm({
     }
   };
 
-  // Lista de estados (US) - poderia ser traduzido também
-  const states = [
-    'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
-    'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD',
-    'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
-    'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
-    'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'
+  // Lista de estados brasileiros
+  const brazilianStates = [
+    'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA',
+    'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN',
+    'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
   ];
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        {/* Basic Information */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold">{t('customer.basicInfo')}</h3>
-          
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t('customer.fullName')} *</FormLabel>
-                <FormControl>
-                  <Input 
-                    placeholder={t('customer.fullName')} 
-                    {...field} 
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+        {/* Card de Informações Básicas */}
+        <Card className="border-border bg-card/50 backdrop-blur-sm">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                <User className="h-4 w-4 text-primary" />
+              </div>
+              <CardTitle className="text-lg font-semibold">
+                {t('customer.basicInfo')}
+              </CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <FormField
               control={form.control}
-              name="email"
+              name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('customer.email')} *</FormLabel>
+                  <FormLabel className="flex items-center gap-2">
+                    <User className="h-3 w-3" />
+                    {t('customer.fullName')}
+                    <span className="text-destructive">*</span>
+                  </FormLabel>
                   <FormControl>
-                    <Input 
-                      placeholder={t('customer.email')} 
-                      type="email" 
-                      {...field} 
+                    <Input
+                      placeholder={t('customer.fullName')}
+                      className="input-custom"
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
@@ -191,243 +201,340 @@ export function CustomerForm({
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="mainPhone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('customer.phoneNumber')}</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder={t('customer.phoneNumber')} 
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          <FormField
-            control={form.control}
-            name="notes"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t('customer.notes')}</FormLabel>
-                <FormControl>
-                  <Textarea 
-                    placeholder={t('customer.additionalInfo')}
-                    className="min-h-[80px]"
-                    {...field} 
-                  />
-                </FormControl>
-                <FormDescription>
-                  {t('customer.anyRelevantNotes')}
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        {/* Address Information */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold">{t('customer.addressInfo')}</h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="address.street"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('customer.street')} *</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder={t('customer.street')} 
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="address.number"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('customer.number')} *</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder={t('customer.number')} 
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          <FormField
-            control={form.control}
-            name="address.neighborhood"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t('customer.neighborhood')}</FormLabel>
-                <FormControl>
-                  <Input 
-                    placeholder={t('customer.neighborhood')} 
-                    {...field} 
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <FormField
-              control={form.control}
-              name="address.city"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('customer.city')} *</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder={t('customer.city')} 
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="address.state"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('customer.state')} *</FormLabel>
-                  <Select 
-                    onValueChange={field.onChange} 
-                    defaultValue={field.value}
-                  >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2">
+                      <Mail className="h-3 w-3" />
+                      {t('customer.email')}
+                      <span className="text-destructive">*</span>
+                    </FormLabel>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder={t('customer.selectState')} />
-                      </SelectTrigger>
+                      <Input
+                        placeholder={t('customer.email')}
+                        type="email"
+                        className="input-custom"
+                        {...field}
+                      />
                     </FormControl>
-                    <SelectContent>
-                      {states.map((state) => (
-                        <SelectItem key={state} value={state}>
-                          {state}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="mainPhone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2">
+                      <Phone className="h-3 w-3" />
+                      {t('customer.phoneNumber')}
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder={t('customer.phoneNumber')}
+                        className="input-custom"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="notes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center gap-2">
+                    <FileText className="h-3 w-3" />
+                    {t('customer.notes')}
+                  </FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder={t('customer.additionalInfo')}
+                      className="input-custom min-h-[100px] resize-none"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    {t('customer.anyRelevantNotes')}
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
+          </CardContent>
+        </Card>
+
+        {/* Card de Endereço */}
+        <Card className="border-border bg-card/50 backdrop-blur-sm">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                <MapPin className="h-4 w-4 text-primary" />
+              </div>
+              <CardTitle className="text-lg font-semibold">
+                {t('customer.addressInfo')}
+              </CardTitle>
+              <Badge variant="outline" className="ml-auto text-xs">
+                <Navigation className="h-3 w-3 mr-1" />
+                US
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="address.street"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2">
+                      <Home className="h-3 w-3" />
+                      {t('customer.street')}
+                      <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder={t('customer.street')}
+                        className="input-custom"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="address.number"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2">
+                      <Building className="h-3 w-3" />
+                      {t('customer.number')}
+                      <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder={t('customer.number')}
+                        className="input-custom"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <FormField
               control={form.control}
-              name="address.zipCode"
+              name="address.neighborhood"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('customer.zipCode')} *</FormLabel>
+                  <FormLabel>{t('customer.neighborhood')}</FormLabel>
                   <FormControl>
-                    <Input 
-                      placeholder={t('customer.zipCode')} 
-                      {...field} 
+                    <Input
+                      placeholder={t('customer.neighborhood')}
+                      className="input-custom"
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <FormField
+                control={form.control}
+                name="address.city"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      {t('customer.city')}
+                      <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder={t('customer.city')}
+                        className="input-custom"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="address.state"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      {t('customer.state')}
+                      <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="input-custom">
+                          <SelectValue placeholder={t('customer.selectState')} />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="bg-card border-border">
+                        {brazilianStates.map((state) => (
+                          <SelectItem
+                            key={state}
+                            value={state}
+                            className="focus:bg-primary/10"
+                          >
+                            {state}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="address.zipCode"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      {t('customer.zipCode')}
+                      <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder={t('customer.zipCode')}
+                        className="input-custom"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="address.complement"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('customer.complement')}</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder={t('customer.complement')}
+                        className="input-custom"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="address.county"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('customer.county')}</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder={t('customer.county')}
+                        className="input-custom"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
             <FormField
               control={form.control}
-              name="address.complement"
+              name="address.country"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('customer.complement')}</FormLabel>
+                  <FormLabel className="flex items-center gap-2">
+                    <Globe className="h-3 w-3" />
+                    {t('customer.country')}
+                  </FormLabel>
                   <FormControl>
-                    <Input 
-                      placeholder={t('customer.complement')} 
-                      {...field} 
+                    <Input
+                      placeholder={t('customer.country')}
+                      className="input-custom"
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
-            <FormField
-              control={form.control}
-              name="address.county"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('customer.county')}</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder={t('customer.county')} 
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          <FormField
-            control={form.control}
-            name="address.country"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t('customer.country')}</FormLabel>
-                <FormControl>
-                  <Input 
-                    placeholder={t('customer.country')} 
-                    {...field} 
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+          </CardContent>
+        </Card>
 
         {/* Form Actions */}
-        <div className="flex justify-end gap-3 pt-4 border-t">
+        <div className="flex justify-end gap-3 pt-6 border-t border-border">
           <Button
             type="button"
             variant="outline"
             onClick={onCancel}
             disabled={isSubmitting}
+            className="gap-2"
           >
+            <X className="h-4 w-4" />
             {t('common.cancel')}
           </Button>
-          <Button type="submit" disabled={isSubmitting}>
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="gap-2 btn-hover-effect"
+          >
             {isSubmitting ? (
               <>
-                <span className="animate-spin mr-2">⟳</span>
+                <Loader2 className="h-4 w-4 animate-spin" />
                 {isEditMode ? t('status.updating') : t('status.creating')}
               </>
             ) : (
               <>
+                <Save className="h-4 w-4" />
                 {isEditMode ? t('customer.edit') : t('customer.create')}
               </>
             )}
           </Button>
+        </div>
+
+        {/* Status Indicator */}
+        <div className="text-xs text-muted-foreground text-center">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-muted/30 rounded-full">
+            <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+            <span>
+              {isEditMode
+                ? 'Editing customer information'
+                : 'Creating new customer record'}
+            </span>
+          </div>
         </div>
       </form>
     </Form>

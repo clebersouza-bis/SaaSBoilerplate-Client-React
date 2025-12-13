@@ -1,6 +1,6 @@
 // hooks/useTranslation.ts
 import { useTranslation as useI18nTranslation } from 'react-i18next';
-import { LanguageCode, LANGUAGES } from '@/lib/i18n/config';
+import { LanguageCode, LanguageName, LANGUAGES } from '@/lib/i18n/config';
 
 // Tipo para variáveis de tradução
 export type TranslationVariables = Record<string, string | number | Date>;
@@ -9,6 +9,7 @@ export function useTranslation() {
   const { t, i18n, ready } = useI18nTranslation();
   
   const currentLanguage = i18n.language as LanguageCode;
+  const currentLanguageName = i18n.language as LanguageName;
   
   const changeLanguage = async (lang: LanguageCode) => {
     await i18n.changeLanguage(lang);
@@ -82,6 +83,7 @@ export function useTranslation() {
     i18n,
     ready,
     currentLanguage,
+    currentLanguageName,
     changeLanguage,
     getCurrentLanguage,
     languages: LANGUAGES,

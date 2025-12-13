@@ -19,7 +19,6 @@
     "preferences": "Preferences"
   },
   "auth": {
-    "login": "Login",
     "logout": "Logout",
     "email": "Email",
     "password": "Password",
@@ -30,11 +29,17 @@
     "failed": "Login failed",
     "title": "Sign in to your account",
     "emailLabel": "Email address",
-    "emailPlaceholder": "Email address",
     "passwordLabel": "Password",
-    "passwordPlaceholder": "Password",
     "loggingOut": "Logging out...",
-    "permissionsCount": "{{count}} permissions"
+    "permissionsCount": "{{count}} permissions",
+    "forgotPassword": "Forgot password?",
+    "rememberMe": "Remember me",
+    "orContinueWith": "Or continue with",
+    "noAccount": "Don't have an account?",
+    "register": "Register",
+    "login": "Sign in to your account",
+    "emailPlaceholder": "Enter your email",
+    "passwordPlaceholder": "Enter your password"
   },
   "navigation": {
     "dashboard": "Dashboard",

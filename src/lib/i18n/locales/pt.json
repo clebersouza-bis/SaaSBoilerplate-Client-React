@@ -19,7 +19,6 @@
     "preferences": "Preferências"
   },
   "auth": {
-    "login": "Login",
     "logout": "Sair",
     "email": "E-mail",
     "password": "Senha",
@@ -30,11 +29,17 @@
     "failed": "Falha no login",
     "title": "Entre na sua conta",
     "emailLabel": "Endereço de e-mail",
-    "emailPlaceholder": "Endereço de e-mail",
     "passwordLabel": "Senha",
-    "passwordPlaceholder": "Senha",
     "loggingOut": "Saindo...",
-    "permissionsCount": "{{count}} permissões"
+    "permissionsCount": "{{count}} permissões",
+       "forgotPassword": "Esqueceu a senha?",
+    "rememberMe": "Lembrar de mim",
+    "orContinueWith": "Ou continuar com",
+    "noAccount": "Não tem uma conta?",
+    "register": "Registrar",
+    "login": "Acesse sua conta",
+    "emailPlaceholder": "Digite seu e-mail",
+    "passwordPlaceholder": "Digite sua senha"
   },
   "navigation": {
     "dashboard": "Dashboard",
