@@ -16,7 +16,8 @@
     "actions": "Ações",
         "user": "Usuário",
     "helpDocumentation": "Ajuda & Documentação",
-    "preferences": "Preferências"
+    "preferences": "Preferências",
+    "collapse": "Esconder"
   },
   "auth": {
     "logout": "Sair",

@@ -16,7 +16,8 @@
     "actions": "Actions",
     "user": "User",
     "helpDocumentation": "Help & Documentation",
-    "preferences": "Preferences"
+    "preferences": "Preferences",
+    "collapse": "Collapse"
   },
   "auth": {
     "logout": "Logout",
