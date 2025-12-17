@@ -50,13 +50,11 @@ export function LoginForm() {
   const handleForgotPassword = () => {
     console.log('Forgot password clicked');
     // Implementar navegação para recuperação de senha
-    // window.location.href = '/forgot-password';
+    window.location.href = '/forgot-password';
   };
 
   const handleRegister = () => {
-    console.log('Register clicked');
-    // Implementar navegação para registro
-    // window.location.href = '/register';
+    window.location.href = '/register';
   };
 
   const togglePasswordVisibility = () => {
@@ -88,8 +86,8 @@ export function LoginForm() {
                 <Building2 className="h-6 w-6 text-white" />
               </div>
               <div className="text-left">
-                <h1 className="text-2xl font-bold tracking-tight">BIS Core</h1>
-                <p className="text-sm text-muted-foreground">Professional Edition</p>
+                <h1 className="text-2xl font-bold tracking-tight">ELYON</h1>
+                <p className="text-sm text-muted-foreground">AI Hotel Operation</p>
               </div>
             </div>
 

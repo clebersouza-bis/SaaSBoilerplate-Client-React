@@ -112,7 +112,7 @@ export function CustomerDialog({
               <div className="h-2 w-2 rounded-full bg-primary/50 animate-pulse" />
               <span>{isEditMode ? 'Updating customer' : 'Creating new customer'}</span>
             </div>
-            <span>BIS Core • v1.0.0</span>
+            <span>ELYON • v1.0.0</span>
           </div>
         </div>
       </DialogContent>

@@ -2,6 +2,9 @@
 import api from '@/lib/api/client';
 import type {
   LoginResponse,
+  RefreshTokenResponse,
+  RegisterUserRequest,
+  RegisterUserResponse,
   SwitchTenantRequest,
   SwitchTenantResponse,
   UserTenantAccessesResponse,
@@ -79,3 +82,46 @@ export async function getUserTenantAccesses(): Promise<UserTenantAccessesRespons
   const response = await api.get<UserTenantAccessesResponse>('/users/me/tenant-accesses');
   return response.data;
 }
+
+export const register = async (data: RegisterUserRequest): Promise<RegisterUserResponse> => {
+  try {
+    console.log('Register API call:', data);
+    
+    const response = await api.post<RegisterUserResponse>('/auth/register', {
+      email: data.email,
+      password: data.password,
+      name: data.name || null,
+      company: data.company,
+    });
+    
+    console.log('Register response:', response.data);
+    return response.data;
+    
+  } catch (error: any) {
+    console.error('Register API error:', error);
+    throw error;
+  }
+};
+
+export const forgotPassword = async (email: string): Promise<{ message: string }> => {
+  try {
+    const response = await api.post<{ message: string }>('/auth/forgot-password', { email });
+    return response.data;
+  } catch (error) {
+    console.error('Forgot password API error:', error);
+    throw error;
+  }
+};
+
+export const resetPassword = async (token: string, newPassword: string): Promise<{ message: string }> => {
+  try {
+    const response = await api.post<{ message: string }>('/auth/reset-password', {
+      token,
+      newPassword,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Reset password API error:', error);
+    throw error;
+  }
+};

@@ -39,6 +39,30 @@ export interface LoginResponse {
   };
 }
 
+export interface RegisterUserRequest {
+  email: string;
+  password: string;
+  name?: string;
+  company: string;
+}
+
+export interface RegisterUserResponse {
+  userId: string;
+  email: string;
+  name?: string;
+  message: string;
+  createdAt: string;
+}
+
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  newPassword: string;
+}
+
 export interface RefreshTokenResponse extends LoginResponse {}
 
 export interface SwitchTenantRequest {

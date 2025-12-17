@@ -150,7 +150,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           {!sidebarCollapsed && (
             <div className="space-y-2">
               <div className="text-xs text-gray-500 dark:text-gray-400">
-                v1.0.0 • BIS Core
+                v1.0.0 • ELYON
               </div>
               <div className="text-xs text-gray-400 dark:text-gray-500">
                 © {new Date().getFullYear()} BIS Corp
