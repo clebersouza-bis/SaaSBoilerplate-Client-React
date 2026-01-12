@@ -44,6 +44,7 @@ export interface RegisterUserRequest {
   password: string;
   name?: string;
   company: string;
+  language?: string;
 }
 
 export interface RegisterUserResponse {

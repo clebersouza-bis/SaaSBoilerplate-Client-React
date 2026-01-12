@@ -61,6 +61,7 @@ export function RegisterForm() {
     company: '',
     password: '',
     confirmPassword: '',
+    language: '',
   });
 
   const [showPassword, setShowPassword] = useState(false);
@@ -105,12 +106,13 @@ export function RegisterForm() {
     }
 
     try {
-      // Chama a API de registro
+      const language = localStorage.getItem('i18nextLng') || 'en';
       const result = await register({
         email: formData.email,
         password: formData.password,
         name: formData.name || undefined,
         company: formData.company,
+        language: language,
       });
 
       setSuccess(true);

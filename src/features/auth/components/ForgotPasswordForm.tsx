@@ -38,7 +38,9 @@ export function ForgotPasswordForm() {
     }
     
     try {
-      const result = await forgotPassword(email);
+      const language = localStorage.getItem('i18nextLng') || 'en';
+      console.log('Language:', language);
+      const result = await forgotPassword(email, language);
       console.log('Forgot password response:', result);
       setSuccess(true);
       

@@ -15,6 +15,20 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface VerifyEmailRequest {
+  token: string;
+}
+
+export interface VerifyEmailResponse {
+  success: boolean;
+  message: string;
+  email?: string;
+}
+
+export interface ResendVerificationRequest {
+  email: string;
+}
+
 // Cache de validação
 let validationCache: {
   promise: Promise<boolean> | null;
@@ -92,6 +106,7 @@ export const register = async (data: RegisterUserRequest): Promise<RegisterUserR
       password: data.password,
       name: data.name || null,
       company: data.company,
+      language: data.language,
     });
     
     console.log('Register response:', response.data);
@@ -103,9 +118,9 @@ export const register = async (data: RegisterUserRequest): Promise<RegisterUserR
   }
 };
 
-export const forgotPassword = async (email: string): Promise<{ message: string }> => {
+export const forgotPassword = async (email: string, language: string): Promise<{ message: string }> => {
   try {
-    const response = await api.post<{ message: string }>('/auth/forgot-password', { email });
+    const response = await api.post<{ message: string }>('/auth/forgot-password', { email, language });
     return response.data;
   } catch (error) {
     console.error('Forgot password API error:', error);
@@ -122,6 +137,31 @@ export const resetPassword = async (token: string, newPassword: string): Promise
     return response.data;
   } catch (error) {
     console.error('Reset password API error:', error);
+    throw error;
+  }
+};
+
+export const verifyEmail = async (token: string): Promise<VerifyEmailResponse> => {
+  try {
+    const response = await api.post<VerifyEmailResponse>('/auth/verify-email', {
+      token
+    });
+    console.log('Verify email response:', response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error('Verify email error:', error);
+    throw error;
+  }
+};
+
+export const resendVerificationEmail = async (email: string): Promise<{ success: boolean; message: string }> => {
+  try {
+    const response = await api.post('/auth/resend-verification', {
+      email
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error('Resend verification error:', error);
     throw error;
   }
 };

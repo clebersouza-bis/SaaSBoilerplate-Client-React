@@ -10,6 +10,8 @@ import { RegisterForm } from '@/features/auth/components/RegisterForm';
 import { ForgotPasswordForm } from '@/features/auth/components/ForgotPasswordForm';
 import { ResetPasswordForm } from '@/features/auth/components/ResetPasswordForm';
 import { SettingsPage } from '@/features/settings/components/SettingsPage';
+import { VerifyEmailPage } from '@/features/auth/components/VerifyEmailPage';
+import { ProfilePage } from '@/features/auth/components/ProfilePage';
 
 // Root route
 const rootRoute = createRootRoute();
@@ -38,6 +40,13 @@ const resetPasswordRoute = createRoute({
   path: '/reset-password',
   component: ResetPasswordForm,
 });
+  
+const verifyEmailPage = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/verify-email',
+  component: VerifyEmailPage,
+});
+
 
 // Dashboard route (protected with permission)
 const dashboardRoute = createRoute({
@@ -52,7 +61,19 @@ const dashboardRoute = createRoute({
   ),
 });
 
-// Customers route (protected with permission)
+// Profile route (protected with permission)
+const profileRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/profile',
+  component: () => (
+    <ProtectedRoute requiredPermissions={['customers.read']}>
+      <AppLayout>
+        <ProfilePage />
+      </AppLayout>
+    </ProtectedRoute>
+  ),
+});
+
 const customersRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/customers',
@@ -99,6 +120,8 @@ const routeTree = rootRoute.addChildren([
   forgotPasswordRoute,
   resetPasswordRoute,
   settingsRoute,
+  verifyEmailPage,
+  profileRoute,
 
   // settingsRoute,
 ]);
