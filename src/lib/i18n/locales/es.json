@@ -437,7 +437,9 @@
     "checkRolePermissions": "Verifique si su rol incluye este permiso",
     "requestAccess": "Solicitar Acceso",
     "contactAdmin": "Contactar Administrador",
-    "requestSubmitted": "Solicitud de acceso enviada exitosamente"
+    "requestSubmitted": "Solicitud de acceso enviada exitosamente",
+    "request": "Solicitud de Acceso",
+    "admin": "Administrador"
   },
   "form": {
     "required": "Este campo es obligatorio",

@@ -107,16 +107,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       setLoading(true);
       try {
-        await validateSession(true); // Força validação inicial
+        // await validateSession(true); // Força validação inicial
         
-        // ⬇⬇⬇ CARREGAR TENANT ACCESSES APÓS VALIDAÇÃO ⬇⬇⬇
+        if (/* condição para carregar tenants */ true) {
         try {
           await loadTenantAccesses();
-          console.log('[AuthProvider] Tenant accesses loaded during initialization');
         } catch (tenantError) {
-          console.warn('[AuthProvider] Failed to load tenant accesses:', tenantError);
-          // Não falha a inicialização se não conseguir carregar tenants
+          console.warn('Failed to load tenant accesses:', tenantError);
         }
+      }
         
       } catch (error) {
         console.error('Auth initialization error:', error);
@@ -128,7 +127,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
 
     initializeAuth();
-  }, []);
+  }, [token]);
 
   // Periodic token validation - APENAS SE NECESSÁRIO
   useEffect(() => {

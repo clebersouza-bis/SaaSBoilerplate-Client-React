@@ -67,9 +67,11 @@ export async function validateToken(): Promise<boolean> {
     try {
       const response = await api.post<boolean>('/auth/validate', {}, {
         skipAuth: false,
+        skipErrorToast: true,       
+        skipPermissionErrorModal: true, 
       });
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('[Auth API] Validation request failed:', error);
       return false;
     }

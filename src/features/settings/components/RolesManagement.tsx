@@ -906,7 +906,7 @@ export function RolesManagement() {
 
                   <Separator />
 
-                  {/* Permissões - Layout Expandido */}
+                  {/* Permissões - Layout Expandido COM GRUPOS DESTACADOS */}
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
@@ -922,6 +922,7 @@ export function RolesManagement() {
                           onClick={() => {
                             const allIds = allPermissions.map(p => p.id);
                             setSelectedPermissions(new Set(allIds));
+                            toast.success(t('settings.allPermissionsSelected'));
                           }}
                         >
                           {t('settings.selectAll')}
@@ -929,9 +930,33 @@ export function RolesManagement() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => setSelectedPermissions(new Set())}
+                          onClick={() => {
+                            setSelectedPermissions(new Set());
+                            toast.info(t('settings.allPermissionsDeselected'));
+                          }}
                         >
                           {t('settings.deselectAll')}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const newExpanded = new Set(expandedGroups);
+                            if (newExpanded.size === permissionGroups.length) {
+                              setExpandedGroups(new Set());
+                              toast.info(t('settings.allGroupsCollapsed'));
+                            } else {
+                              setExpandedGroups(new Set(permissionGroups.map(g => g.resource)));
+                              toast.success(t('settings.allGroupsExpanded'));
+                            }
+                          }}
+                          title={t('settings.toggleAllGroups')}
+                        >
+                          {expandedGroups.size === permissionGroups.length ? (
+                            <ChevronDown className="h-4 w-4" />
+                          ) : (
+                            <ChevronRight className="h-4 w-4" />
+                          )}
                         </Button>
                       </div>
                     </div>
@@ -957,95 +982,277 @@ export function RolesManagement() {
                       </div>
                     ) : (
                       <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
-                        {permissionGroups.map((group) => (
-                          <Card key={group.resource} className="border-border overflow-hidden">
-                            <div className="bg-muted/30 border-b">
-                              <button
-                                onClick={() => handleToggleGroup(group.resource)}
-                                className="w-full px-4 py-3 flex items-center justify-between hover:bg-muted/50 transition-colors"
-                              >
-                                <div className="flex items-center gap-3 flex-1">
-                                  {expandedGroups.has(group.resource) ? (
-                                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                                  ) : (
-                                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                                  )}
-                                  <div className="text-left flex-1">
-                                    <div className="flex items-center gap-2">
-                                      <span className="font-semibold capitalize">{group.resource}</span>
-                                      {group.category && (
-                                        <Badge variant="outline" className={getCategoryColor(group.category)}>
-                                          {group.category}
-                                        </Badge>
+                        {permissionGroups.map((group) => {
+                          const selectedInGroup = group.permissions.filter(p => selectedPermissions.has(p.id)).length;
+                          const isAllSelected = selectedInGroup === group.permissions.length;
+                          const isPartialSelected = selectedInGroup > 0 && selectedInGroup < group.permissions.length;
+                          const isExpanded = expandedGroups.has(group.resource);
+
+                          return (
+                            <div
+                              key={group.resource}
+                              className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+                            >
+                              {/* HEADER DO GRUPO - MUITO MAIS DESTACADO */}
+                              <div className={`
+                          px-4 py-3 border-b transition-colors
+                          ${isExpanded
+                                  ? 'bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20'
+                                  : 'bg-gradient-to-r from-muted/30 to-muted/10 border-border'
+                                }
+                        `}>
+                                <div className="flex items-center justify-between">
+                                  <button
+                                    onClick={() => handleToggleGroup(group.resource)}
+                                    className="flex items-center gap-3 flex-1 group hover:opacity-90 transition-opacity text-left"
+                                  >
+                                    <div className={`
+                                h-8 w-8 rounded-lg flex items-center justify-center transition-colors
+                                ${isExpanded
+                                        ? 'bg-primary/20 text-primary'
+                                        : 'bg-muted text-muted-foreground'
+                                      }
+                              `}>
+                                      {isExpanded ? (
+                                        <ChevronDown className="h-4 w-4" />
+                                      ) : (
+                                        <ChevronRight className="h-4 w-4" />
                                       )}
                                     </div>
-                                    <div className="text-xs text-muted-foreground mt-1">
-                                      {group.permissions.length} {t('settings.permissions')} •
-                                      {group.permissions.filter(p => selectedPermissions.has(p.id)).length} {t('settings.selected')}
+
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <span className="font-semibold text-base capitalize truncate">
+                                          {group.resource}
+                                        </span>
+
+                                        {/* Status do grupo */}
+                                        {isAllSelected ? (
+                                          <Badge className="bg-green-500/20 text-green-700 border-green-300">
+                                            <Check className="h-3 w-3 mr-1" />
+                                            {t('settings.allSelected')}
+                                          </Badge>
+                                        ) : isPartialSelected ? (
+                                          <Badge className="bg-yellow-500/20 text-yellow-700 border-yellow-300">
+                                            <AlertCircle className="h-3 w-3 mr-1" />
+                                            {t('settings.partial')}
+                                          </Badge>
+                                        ) : (
+                                          <Badge variant="outline" className="text-muted-foreground">
+                                            {t('settings.noneSelected')}
+                                          </Badge>
+                                        )}
+
+                                        {group.category && (
+                                          <Badge
+                                            variant="outline"
+                                            className={`
+                                        ${getCategoryColor(group.category)} 
+                                        border-current/20
+                                      `}
+                                          >
+                                            {group.category}
+                                          </Badge>
+                                        )}
+                                      </div>
+
+                                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                                        <span className="flex items-center gap-1">
+                                          <Key className="h-3 w-3" />
+                                          {group.permissions.length} {t('settings.permissions')}
+                                        </span>
+                                        <span className="h-3 w-px bg-border" />
+                                        <span className="font-medium text-primary">
+                                          {selectedInGroup} {t('settings.selected')}
+                                        </span>
+                                        <span className="h-3 w-px bg-border" />
+                                        <span className="flex items-center gap-1">
+                                          <Shield className="h-3 w-3" />
+                                          {Math.round((selectedInGroup / group.permissions.length) * 100)}%
+                                        </span>
+                                      </div>
                                     </div>
+                                  </button>
+
+                                  <div className="flex items-center gap-2 ml-4">
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleSelectAllInGroup(group);
+                                      }}
+                                      className={`
+                                  text-xs h-7 px-2 transition-all
+                                  ${isAllSelected
+                                          ? 'bg-red-500/10 text-red-600 hover:bg-red-500/20 hover:text-red-700'
+                                          : 'bg-green-500/10 text-green-600 hover:bg-green-500/20 hover:text-green-700'
+                                        }
+                                `}
+                                    >
+                                      {isAllSelected ? (
+                                        <>
+                                          <X className="h-3 w-3 mr-1" />
+                                          {t('settings.deselectAll')}
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Check className="h-3 w-3 mr-1" />
+                                          {t('settings.selectAll')}
+                                        </>
+                                      )}
+                                    </Button>
                                   </div>
                                 </div>
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleSelectAllInGroup(group);
-                                  }}
-                                  className="text-xs"
-                                >
-                                  {group.permissions.every(p => selectedPermissions.has(p.id)) ? (
-                                    <>
-                                      <Check className="h-3 w-3 mr-1" />
-                                      {t('settings.deselectAll')}
-                                    </>
-                                  ) : (
-                                    <>
-                                      <ListChecks className="h-3 w-3 mr-1" />
-                                      {t('settings.selectAll')}
-                                    </>
-                                  )}
-                                </Button>
-                              </button>
+                              </div>
 
-                              {expandedGroups.has(group.resource) && (
-                                <div className="px-4 pb-3 pt-2">
-                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                    {group.permissions.map((permission) => (
-                                      <div
-                                        key={permission.id}
-                                        className={`flex items-center justify-between p-3 rounded-lg border transition-all ${selectedPermissions.has(permission.id)
-                                          ? 'border-primary bg-primary/5'
-                                          : 'border-border hover:bg-muted/30'
-                                          }`}
-                                      >
-                                        <div className="flex-1 min-w-0">
-                                          <div className="font-medium text-sm truncate">
-                                            {permission.name}
-                                          </div>
-                                          <div className="text-xs text-muted-foreground font-mono truncate mt-1">
-                                            {permission.key}
-                                          </div>
-                                          {permission.description && (
-                                            <div className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                                              {permission.description}
+                              {/* LISTA DE PERMISSÕES - ESTILO MELHORADO */}
+                              {isExpanded && (
+                                <div className="bg-gradient-to-b from-background to-muted/5">
+                                  <div className="p-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                      {group.permissions.map((permission) => {
+                                        const isSelected = selectedPermissions.has(permission.id);
+
+                                        return (
+                                          <div
+                                            key={permission.id}
+                                            className={`
+                                        flex items-start justify-between p-3 rounded-lg border transition-all
+                                        cursor-pointer group/permission hover:scale-[1.02] transform-gpu
+                                        ${isSelected
+                                                ? 'border-primary bg-gradient-to-r from-primary/5 to-primary/10 shadow-sm'
+                                                : 'border-border hover:bg-muted/30 hover:border-primary/30'
+                                              }
+                                      `}
+                                            onClick={() => handleTogglePermission(permission.id)}
+                                          >
+                                            <div className="flex-1 min-w-0">
+                                              <div className="flex items-start gap-2">
+                                                <div className={`
+                                            h-6 w-6 rounded-md flex items-center justify-center flex-shrink-0 mt-0.5
+                                            ${isSelected
+                                                    ? 'bg-primary text-primary-foreground'
+                                                    : 'bg-muted text-muted-foreground group-hover/permission:bg-primary/20'
+                                                  }
+                                          `}>
+                                                  {isSelected ? (
+                                                    <Check className="h-3 w-3" />
+                                                  ) : (
+                                                    <Key className="h-3 w-3" />
+                                                  )}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                  <div className="flex items-center gap-2 mb-1">
+                                                    <div className="font-medium text-sm truncate">
+                                                      {permission.name}
+                                                    </div>
+                                                    {!permission.isActive && (
+                                                      <Badge variant="outline" className="text-xs">
+                                                        {t('settings.inactive')}
+                                                      </Badge>
+                                                    )}
+                                                  </div>
+                                                  <div className="text-xs text-muted-foreground font-mono truncate mb-1">
+                                                    {permission.key}
+                                                  </div>
+                                                  {permission.description && (
+                                                    <div className="text-xs text-muted-foreground line-clamp-2">
+                                                      {permission.description}
+                                                    </div>
+                                                  )}
+                                                </div>
+                                              </div>
                                             </div>
-                                          )}
+                                            <div className="ml-3 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                                              <Switch
+                                                checked={isSelected}
+                                                onCheckedChange={() => handleTogglePermission(permission.id)}
+                                                className={`
+                                            ${isSelected
+                                                    ? 'bg-primary'
+                                                    : 'bg-muted'
+                                                  }
+                                          `}
+                                              />
+                                            </div>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+
+                                    {/* Resumo do Grupo */}
+                                    <div className="mt-4 pt-4 border-t border-border/50">
+                                      <div className="flex items-center justify-between text-sm">
+                                        <div className="flex items-center gap-3">
+                                          <div className="flex items-center gap-2">
+                                            <div className="h-3 w-3 rounded-full bg-green-500" />
+                                            <span className="text-muted-foreground">
+                                              {selectedInGroup} {t('settings.selected')}
+                                            </span>
+                                          </div>
+                                          <div className="flex items-center gap-2">
+                                            <div className="h-3 w-3 rounded-full bg-gray-300" />
+                                            <span className="text-muted-foreground">
+                                              {group.permissions.length - selectedInGroup} {t('settings.available')}
+                                            </span>
+                                          </div>
                                         </div>
-                                        <Switch
-                                          checked={selectedPermissions.has(permission.id)}
-                                          onCheckedChange={() => handleTogglePermission(permission.id)}
-                                          className="ml-3"
-                                        />
+                                        <div className="text-right">
+                                          <span className="font-medium">
+                                            {Math.round((selectedInGroup / group.permissions.length) * 100)}% {t('settings.complete')}
+                                          </span>
+                                        </div>
                                       </div>
-                                    ))}
+                                    </div>
                                   </div>
                                 </div>
                               )}
                             </div>
-                          </Card>
-                        ))}
+                          );
+                        })}
+
+                        {/* Resumo Geral */}
+                        <div className="sticky bottom-0 bg-background/95 backdrop-blur-sm border rounded-lg p-4 mt-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                              <div className="flex items-center gap-2">
+                                <Shield className="h-5 w-5 text-primary" />
+                                <span className="font-medium">
+                                  {selectedPermissions.size} {t('settings.permissionsSelected')}
+                                </span>
+                              </div>
+                              <div className="h-4 w-px bg-border" />
+                              <div className="flex items-center gap-2">
+                                <CheckCircle className="h-5 w-5 text-green-500" />
+                                <span className="text-sm text-muted-foreground">
+                                  {permissionGroups.filter(g =>
+                                    g.permissions.every(p => selectedPermissions.has(p.id))
+                                  ).length} {t('settings.completeGroups')}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-2xl font-bold text-primary">
+                                {Math.round((selectedPermissions.size / allPermissions.length) * 100)}%
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {t('settings.ofTotalPermissions')}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Barra de Progresso */}
+                          <div className="mt-3">
+                            <div className="h-2 bg-muted rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full transition-all duration-300"
+                                style={{ width: `${(selectedPermissions.size / allPermissions.length) * 100}%` }}
+                              />
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -1055,8 +1262,11 @@ export function RolesManagement() {
 
             <div className="border-t bg-muted/20 p-6">
               <div className="flex justify-between items-center">
-                <div className="text-sm text-muted-foreground">
-                  {selectedPermissions.size} {t('settings.permissionsSelected')}
+                <div className="text-sm text-muted-foreground flex items-center gap-2">
+                  <Key className="h-4 w-4" />
+                  <span>
+                    {selectedPermissions.size} {t('settings.permissionsSelected')} • {permissionGroups.length} {t('settings.groups')}
+                  </span>
                 </div>
                 <div className="flex gap-3">
                   <Button

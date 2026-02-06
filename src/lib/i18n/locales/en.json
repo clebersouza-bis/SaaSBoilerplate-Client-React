@@ -453,7 +453,10 @@
     "checkRolePermissions": "Check if your role includes this permission",
     "requestAccess": "Request Access",
     "contactAdmin": "Contact Admin",
-    "requestSubmitted": "Access request submitted successfully"
+    "requestSubmitted": "Access request submitted successfully",
+    "request": "Request",
+    "admin": "Admin"
+
   },
   "form": {
     "required": "This field is required",
