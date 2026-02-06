@@ -59,7 +59,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   );
 
   return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900 overflow-hidden">
       {/* Mobile menu overlay */}
       {mobileMenuOpen && (
         <div
@@ -176,7 +176,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       </aside>
 
       {/* Main Content */}
-      <div className="flex flex-col flex-1 lg:ml-0">
+      <div className="flex flex-col flex-1 lg:ml-0 overflow-hidden">
         {/* Top Header */}
         <header className="sticky top-0 z-30 flex items-center justify-between px-4 lg:px-6 py-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-4">

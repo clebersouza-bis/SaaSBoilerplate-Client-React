@@ -12,11 +12,13 @@ import { ResetPasswordForm } from '@/features/auth/components/ResetPasswordForm'
 import { SettingsPage } from '@/features/settings/components/SettingsPage';
 import { VerifyEmailPage } from '@/features/auth/components/VerifyEmailPage';
 import { ProfilePage } from '@/features/auth/components/ProfilePage';
+import { CustomerDetailsPage } from '@/features/customers/components/CustomerDetailsPage';
+import { InviteConfirmationPage } from '@/features/auth/components/InviteConfirmationPage';
 
 // Root route
 const rootRoute = createRootRoute();
 
-// Login route (public)
+//  (public routes)
 const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/login',
@@ -47,6 +49,11 @@ const verifyEmailPage = createRoute({
   component: VerifyEmailPage,
 });
 
+const inviteConfirmationPage = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/invite/confirm',
+  component: InviteConfirmationPage,
+});
 
 // Dashboard route (protected with permission)
 const dashboardRoute = createRoute({
@@ -66,7 +73,7 @@ const profileRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/profile',
   component: () => (
-    <ProtectedRoute requiredPermissions={['customers.read']}>
+    <ProtectedRoute requiredPermissions={['profile.read']}>
       <AppLayout>
         <ProfilePage />
       </AppLayout>
@@ -86,11 +93,23 @@ const customersRoute = createRoute({
   ),
 });
 
+const customerDetailsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/customers/$id',
+  component: () => (
+    <ProtectedRoute requiredPermissions={['customers.read']}>
+      <AppLayout>
+        <CustomerDetailsPage />
+      </AppLayout>
+    </ProtectedRoute>
+  ),
+});
+
 const settingsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/settings',
   component: () => (
-    <ProtectedRoute>
+    <ProtectedRoute requiredPermissions={['settings.view']}>
       <AppLayout>
         <SettingsPage />
       </AppLayout>
@@ -98,30 +117,19 @@ const settingsRoute = createRoute({
   ),
 });
 
-// Settings route (protected with permission)
-// const settingsRoute = createRoute({
-//   getParentRoute: () => rootRoute,
-//   path: '/settings',
-//   component: () => (
-//     <ProtectedRoute requiredPermissions={['settings.view']}>
-//       <AppLayout>
-//         <SettingsPage />
-//       </AppLayout>
-//     </ProtectedRoute>
-//   ),
-// });
-
 // Create route tree
 const routeTree = rootRoute.addChildren([
   loginRoute,
   registerRoute,
   dashboardRoute,
   customersRoute,
+  customerDetailsRoute,
   forgotPasswordRoute,
   resetPasswordRoute,
   settingsRoute,
   verifyEmailPage,
   profileRoute,
+  inviteConfirmationPage,
 
   // settingsRoute,
 ]);

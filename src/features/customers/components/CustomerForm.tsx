@@ -1,4 +1,4 @@
-// features/customers/components/CustomerForm.tsx - VERSÃO MODERNA
+// features/customers/components/CustomerForm.tsx - VERSÃO COMPLETA ATUALIZADA
 import * as React from 'react';
 import { useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -9,14 +9,16 @@ import {
   Mail,
   Phone,
   MapPin,
-  Building,
-  FileText,
-  Navigation,
   Home,
   Globe,
+  Tag,
+  MessageSquare,
+  User as ContactUser,
+  Phone as ContactPhone,
   Save,
   X,
-  Loader2
+  Loader2,
+  Star
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -30,72 +32,58 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import type { Customer, CreateCustomerDto, UpdateCustomerDto } from '@/types/customer';
+import type { CustomerDto, CreateCustomerRequest, UpdateCustomerRequest, CustomerAddressDto } from '@/types/customer';
 import { useTranslation } from '@/hooks/useTranslation';
+import { cn } from '@/lib/utils';
+import { useUpdateCustomer, useCreateCustomer } from '../hooks/useCustomerMutations';
+import { PermissionErrorModal } from '@/components/modals/PermissionErrorModal';
 
-// Schema de validação com mensagens traduzidas
+// Schema de validação
 const createCustomerFormSchema = (t: (key: string, params?: Record<string, any>) => string) => {
   return z.object({
     name: z.string().min(2, {
       message: t('form.minLength', { count: 2 })
+    }).max(100, {
+      message: t('form.maxLength', { count: 100 })
     }),
     email: z.string().email({
       message: t('form.invalidEmail')
-    }),
-    mainPhone: z.string().optional(),
-    notes: z.string().optional(),
+    }).optional().or(z.literal('')),
+    phone: z.string().optional().or(z.literal('')),
+    isActive: z.boolean().default(true),
+    // Endereço principal (opcional)
     address: z.object({
-      street: z.string().min(1, {
-        message: t('form.streetRequired')
-      }),
-      number: z.string().min(1, {
-        message: t('form.numberRequired')
-      }),
-      neighborhood: z.string().optional(),
-      city: z.string().min(1, {
-        message: t('form.cityRequired')
-      }),
-      state: z.string()
-        .min(2, {
-          message: t('form.stateLength')
-        })
-        .max(2, {
-          message: t('form.stateLength')
-        }),
-      zipCode: z.string().min(5, {
-        message: t('form.zipRequired')
-      }),
-      complement: z.string().optional(),
-      county: z.string().optional(),
+      label: z.string().optional(),
+      line1: z.string().optional(),
+      line2: z.string().optional(),
+      city: z.string().optional(),
+      state: z.string().optional(),
+      postalCode: z.string().optional(),
       country: z.string().optional(),
-    }),
+      isPrimary: z.boolean().default(true),
+      notes: z.string().optional(),
+      contactName: z.string().optional(),
+      contactPhone: z.string().optional(),
+    }).optional(),
   });
 };
 
 type CustomerFormValues = z.infer<ReturnType<typeof createCustomerFormSchema>>;
 
 interface CustomerFormProps {
-  customer?: Customer | null;
-  onSubmit: (data: CreateCustomerDto | UpdateCustomerDto) => Promise<void>;
+  customer?: CustomerDto | null;
+  onSuccess: () => void;
   onCancel: () => void;
-  isSubmitting?: boolean;
 }
 
 export function CustomerForm({
   customer,
-  onSubmit,
+  onSuccess,
   onCancel,
-  isSubmitting = false,
 }: CustomerFormProps) {
   const { t } = useTranslation();
   const isEditMode = !!customer;
@@ -109,434 +97,533 @@ export function CustomerForm({
     defaultValues: {
       name: '',
       email: '',
-      mainPhone: '',
-      notes: '',
+      phone: '',
+      isActive: true,
       address: {
-        street: '',
-        number: '',
-        neighborhood: '',
+        label: '',
+        line1: '',
+        line2: '',
         city: '',
         state: '',
-        zipCode: '',
-        complement: '',
-        county: '',
-        country: 'USA',
+        postalCode: '',
+        country: '',
+        isPrimary: true,
+        notes: '',
+        contactName: '',
+        contactPhone: '',
       },
     },
   });
 
+  // Usando hooks com tratamento de permissão
+  const { 
+    mutation: updateMutation, 
+    permissionError: updatePermissionError,
+    clearPermissionError: clearUpdateError 
+  } = useUpdateCustomer();
+  
+  const { 
+    mutation: createMutation, 
+    permissionError: createPermissionError,
+    clearPermissionError: clearCreateError 
+  } = useCreateCustomer();
+
+  const permissionError = isEditMode ? updatePermissionError : createPermissionError;
+  const clearPermissionError = isEditMode ? clearUpdateError : clearCreateError;
+  const isSubmitting = isEditMode ? updateMutation.isPending : createMutation.isPending;
+
   // Preencher form se for edição
   useEffect(() => {
     if (customer) {
+      // Encontra endereço principal ou usa o primeiro
+      const primaryAddress = customer.addresses?.find(addr => addr.isPrimary) || customer.addresses?.[0];
+      
       form.reset({
         name: customer.name,
-        email: customer.email,
-        mainPhone: customer.mainPhone || '',
-        notes: customer.notes || '',
-        address: {
-          street: customer.address.street,
-          number: customer.address.number || '',
-          neighborhood: customer.address.neighborhood || '',
-          city: customer.address.city,
-          state: customer.address.state,
-          zipCode: customer.address.zipCode,
-          complement: customer.address.complement || '',
-          county: customer.address.county || '',
-          country: customer.address.country || 'USA',
-        },
+        email: customer.email || '',
+        phone: customer.phone || '',
+        isActive: customer.isActive,
+        address: primaryAddress ? {
+          label: primaryAddress.label || '',
+          line1: primaryAddress.line1 || '',
+          line2: primaryAddress.line2 || '',
+          city: primaryAddress.city || '',
+          state: primaryAddress.state || '',
+          postalCode: primaryAddress.postalCode || '',
+          country: primaryAddress.country || '',
+          isPrimary: primaryAddress.isPrimary,
+          notes: primaryAddress.notes || '',
+          contactName: primaryAddress.contactName || '',
+          contactPhone: primaryAddress.contactPhone || '',
+        } : undefined,
       });
     }
   }, [customer, form]);
 
   const handleSubmit = async (values: CustomerFormValues) => {
     try {
-      await onSubmit(values);
+      if (isEditMode && customer) {
+        // Preparar dados para atualização
+        const updateData: UpdateCustomerRequest = {
+          customerId: customer.id,
+          name: values.name,
+          email: values.email || undefined,
+          phone: values.phone || undefined,
+          isActive: values.isActive,
+        };
+
+        await updateMutation.mutateAsync({
+          id: customer.id,
+          data: updateData,
+        });
+      } else {
+        // Preparar dados para criação
+        const createData: CreateCustomerRequest = {
+          name: values.name,
+          email: values.email || undefined,
+          phone: values.phone || undefined,
+          isActive: values.isActive,
+          addressIsPrimary: values.address?.isPrimary || true,
+          // Inclui customerAddress se tiver dados
+          ...(values.address && Object.values(values.address).some(val => val) && {
+            customerAddress: {
+              ...values.address,
+              id: '', // Será gerado pelo backend
+              isPrimary: values.address.isPrimary,
+            } as CustomerAddressDto
+          })
+        };
+
+        await createMutation.mutateAsync(createData);
+      }
+      
+      // Sucesso - fecha o form ou faz redirect
+      onSuccess();
+      
     } catch (error) {
+      // Erro já tratado pelos hooks/interceptors
       console.error('Form submission error:', error);
     }
   };
 
-  // Lista de estados brasileiros
-  const brazilianStates = [
-    'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA',
-    'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN',
-    'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
+  // Países comuns para select
+  const countries = [
+    { value: 'US', label: 'United States' },
+    { value: 'BR', label: 'Brazil' },
+    { value: 'CA', label: 'Canada' },
+    { value: 'GB', label: 'United Kingdom' },
+    { value: 'AU', label: 'Australia' },
+    { value: 'DE', label: 'Germany' },
+    { value: 'FR', label: 'France' },
+    { value: 'ES', label: 'Spain' },
+    { value: 'IT', label: 'Italy' },
+    { value: 'JP', label: 'Japan' },
   ];
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
-        {/* Card de Informações Básicas */}
-        <Card className="border-border bg-card/50 backdrop-blur-sm">
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-8 bg-primary/10 rounded-lg flex items-center justify-center">
-                <User className="h-4 w-4 text-primary" />
+    <>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+          {/* Informações Básicas do Customer */}
+          <Card className="border-border bg-card/50 backdrop-blur-sm">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                  <User className="h-4 w-4 text-primary" />
+                </div>
+                <CardTitle className="text-lg font-semibold">
+                  {t('customer.basicInfo')}
+                </CardTitle>
+                <div className="ml-auto">
+                  <FormField
+                    control={form.control}
+                    name="isActive"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center space-x-2">
+                        <FormLabel className="text-sm">
+                          {field.value ? t('customer.active') : t('customer.inactive')}
+                        </FormLabel>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
-              <CardTitle className="text-lg font-semibold">
-                {t('customer.basicInfo')}
-              </CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-2">
-                    <User className="h-3 w-3" />
-                    {t('customer.fullName')}
-                    <span className="text-destructive">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={t('customer.fullName')}
-                      className="input-custom"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            </CardHeader>
+            <CardContent className="space-y-4">
               <FormField
                 control={form.control}
-                name="email"
+                name="name"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="flex items-center gap-2">
-                      <Mail className="h-3 w-3" />
-                      {t('customer.email')}
+                      <User className="h-3 w-3" />
+                      {t('customer.name')}
                       <span className="text-destructive">*</span>
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder={t('customer.email')}
-                        type="email"
+                        placeholder={t('customer.name')}
                         className="input-custom"
                         {...field}
                       />
                     </FormControl>
+                    <FormDescription>
+                      {t('customer.nameDescription')}
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="mainPhone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2">
-                      <Phone className="h-3 w-3" />
-                      {t('customer.phoneNumber')}
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder={t('customer.phoneNumber')}
-                        className="input-custom"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="notes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-2">
-                    <FileText className="h-3 w-3" />
-                    {t('customer.notes')}
-                  </FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder={t('customer.additionalInfo')}
-                      className="input-custom min-h-[100px] resize-none"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    {t('customer.anyRelevantNotes')}
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </CardContent>
-        </Card>
-
-        {/* Card de Endereço */}
-        <Card className="border-border bg-card/50 backdrop-blur-sm">
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-8 bg-primary/10 rounded-lg flex items-center justify-center">
-                <MapPin className="h-4 w-4 text-primary" />
-              </div>
-              <CardTitle className="text-lg font-semibold">
-                {t('customer.addressInfo')}
-              </CardTitle>
-              <Badge variant="outline" className="ml-auto text-xs">
-                <Navigation className="h-3 w-3 mr-1" />
-                US
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="address.street"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2">
-                      <Home className="h-3 w-3" />
-                      {t('customer.street')}
-                      <span className="text-destructive">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder={t('customer.street')}
-                        className="input-custom"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="address.number"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2">
-                      <Building className="h-3 w-3" />
-                      {t('customer.number')}
-                      <span className="text-destructive">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder={t('customer.number')}
-                        className="input-custom"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="address.neighborhood"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('customer.neighborhood')}</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={t('customer.neighborhood')}
-                      className="input-custom"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <FormField
-                control={form.control}
-                name="address.city"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      {t('customer.city')}
-                      <span className="text-destructive">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder={t('customer.city')}
-                        className="input-custom"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="address.state"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      {t('customer.state')}
-                      <span className="text-destructive">*</span>
-                    </FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2">
+                        <Mail className="h-3 w-3" />
+                        {t('customer.email')}
+                      </FormLabel>
                       <FormControl>
-                        <SelectTrigger className="input-custom">
-                          <SelectValue placeholder={t('customer.selectState')} />
-                        </SelectTrigger>
+                        <Input
+                          placeholder={t('customer.email')}
+                          type="email"
+                          className="input-custom"
+                          {...field}
+                          value={field.value || ''}
+                        />
                       </FormControl>
-                      <SelectContent className="bg-card border-border">
-                        {brazilianStates.map((state) => (
-                          <SelectItem
-                            key={state}
-                            value={state}
-                            className="focus:bg-primary/10"
-                          >
-                            {state}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2">
+                        <Phone className="h-3 w-3" />
+                        {t('customer.phone')}
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder={t('customer.phone')}
+                          className="input-custom"
+                          {...field}
+                          value={field.value || ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Endereço Principal (opcional) */}
+          <Card className="border-border bg-card/50 backdrop-blur-sm">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                  <MapPin className="h-4 w-4 text-primary" />
+                </div>
+                <CardTitle className="text-lg font-semibold">
+                  {t('customer.primaryAddress')}
+                </CardTitle>
+                <Badge variant="outline" className="ml-auto text-xs">
+                  <Star className="h-3 w-3 mr-1" />
+                  {t('customer.primary')}
+                </Badge>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {t('customer.addressOptional')}
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <FormField
                 control={form.control}
-                name="address.zipCode"
+                name="address.label"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>
-                      {t('customer.zipCode')}
-                      <span className="text-destructive">*</span>
+                    <FormLabel className="flex items-center gap-2">
+                      <Tag className="h-3 w-3" />
+                      {t('customer.addressLabel')}
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder={t('customer.zipCode')}
+                        placeholder={t('customer.e.g., Home, Office, Warehouse')}
                         className="input-custom"
                         {...field}
+                        value={field.value || ''}
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="address.line1"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        {t('customer.addressLine1')}
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder={t('customer.street')}
+                          className="input-custom"
+                          {...field}
+                          value={field.value || ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="address.line2"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        {t('customer.addressLine2')}
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder={t('customer.apt, suite, building')}
+                          className="input-custom"
+                          {...field}
+                          value={field.value || ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <FormField
+                  control={form.control}
+                  name="address.city"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('customer.city')}</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder={t('customer.city')}
+                          className="input-custom"
+                          {...field}
+                          value={field.value || ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="address.state"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('customer.state')}</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder={t('customer.state')}
+                          className="input-custom"
+                          {...field}
+                          value={field.value || ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="address.postalCode"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('customer.postalCode')}</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder={t('customer.postalCode')}
+                          className="input-custom"
+                          {...field}
+                          value={field.value || ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
               <FormField
                 control={form.control}
-                name="address.complement"
+                name="address.country"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('customer.complement')}</FormLabel>
+                    <FormLabel className="flex items-center gap-2">
+                      <Globe className="h-3 w-3" />
+                      {t('customer.country')}
+                    </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder={t('customer.complement')}
+                        placeholder={t('customer.country')}
                         className="input-custom"
                         {...field}
+                        value={field.value || ''}
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
+              <Separator />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="address.contactName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2">
+                        <ContactUser className="h-3 w-3" />
+                        {t('customer.contactName')}
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder={t('customer.contactName')}
+                          className="input-custom"
+                          {...field}
+                          value={field.value || ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="address.contactPhone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2">
+                        <ContactPhone className="h-3 w-3" />
+                        {t('customer.contactPhone')}
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder={t('customer.contactPhone')}
+                          className="input-custom"
+                          {...field}
+                          value={field.value || ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <FormField
                 control={form.control}
-                name="address.county"
+                name="address.notes"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('customer.county')}</FormLabel>
+                    <FormLabel className="flex items-center gap-2">
+                      <MessageSquare className="h-3 w-3" />
+                      {t('customer.addressNotes')}
+                    </FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder={t('customer.county')}
-                        className="input-custom"
+                      <Textarea
+                        placeholder={t('customer.specialInstructions')}
+                        className="input-custom min-h-[80px] resize-none"
                         {...field}
+                        value={field.value || ''}
                       />
                     </FormControl>
                     <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="address.country"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-2">
-                    <Globe className="h-3 w-3" />
-                    {t('customer.country')}
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={t('customer.country')}
-                      className="input-custom"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
                 </FormItem>
+                )}
+              />
+            </CardContent>
+          </Card>
+
+          {/* Ações do Formulário */}
+          <div className="flex justify-end gap-3 pt-6 border-t border-border">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              disabled={isSubmitting}
+              className="gap-2"
+            >
+              <X className="h-4 w-4" />
+              {t('common.cancel')}
+            </Button>
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="gap-2 btn-hover-effect relative"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {isEditMode ? t('status.updating') : t('status.creating')}
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4" />
+                  {isEditMode ? t('customer.saveChanges') : t('customer.createCustomer')}
+                </>
               )}
-            />
-          </CardContent>
-        </Card>
-
-        {/* Form Actions */}
-        <div className="flex justify-end gap-3 pt-6 border-t border-border">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onCancel}
-            disabled={isSubmitting}
-            className="gap-2"
-          >
-            <X className="h-4 w-4" />
-            {t('common.cancel')}
-          </Button>
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            className="gap-2 btn-hover-effect"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                {isEditMode ? t('status.updating') : t('status.creating')}
-              </>
-            ) : (
-              <>
-                <Save className="h-4 w-4" />
-                {isEditMode ? t('customer.edit') : t('customer.create')}
-              </>
-            )}
-          </Button>
-        </div>
-
-        {/* Status Indicator */}
-        <div className="text-xs text-muted-foreground text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-muted/30 rounded-full">
-            <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-            <span>
-              {isEditMode
-                ? 'Editing customer information'
-                : 'Creating new customer record'}
-            </span>
+              
+              {/* Indicador visual de erro de permissão */}
+              {permissionError.show && (
+                <span className="absolute -top-1 -right-1">
+                  <div className="h-2 w-2 bg-destructive rounded-full animate-pulse" />
+                </span>
+              )}
+            </Button>
           </div>
-        </div>
-      </form>
-    </Form>
+        </form>
+      </Form>
+
+      {/* Modal de erro de permissão */}
+      <PermissionErrorModal
+        open={permissionError.show}
+        onOpenChange={(open) => {
+          if (!open) clearPermissionError();
+        }}
+        error={{
+          resource: permissionError.resource ?? '',
+          action: permissionError.action ?? '',
+          message: t('errors.cannotPerformAction', {
+            action: permissionError.action ?? '',
+            resource: permissionError.resource ?? '',
+          })
+        }}
+      />
+    </>
   );
 }

@@ -1,63 +1,90 @@
-// types/customer.ts - VERSÃO ATUALIZADA
-export interface Address {
-  street: string;  
-  number: string;  
-  neighborhood: string | null;
-  city: string;
-  state: string;
-  zipCode: string; 
-  complement: string | null; 
-  county: string | null;
-  country: string | null; 
-  latitude: string | null;
-  longitude: string | null;
-}
-
-export interface Customer {
+// types/customer.ts - ATUALIZADO COM BASE NOS DTOs
+export interface CustomerAddressDto {
   id: string;
-  tenantId: string;
-  name: string;
-  email: string;
-  mainPhone: string | null;
-  address: Address;
-  notes?: string | null;  
-  createdAt: string;
-  createdBy: string | null;
-  updatedAt: string | null;
-  updatedBy: string | null;
-  isDeleted: boolean;
-  deletedAt: string | null;
-  deletedBy: string | null;
-}
-
-export interface CreateCustomerDto {
-  name: string;
-  email: string;
-  mainPhone?: string;
+  label?: string;
+  line1?: string;
+  line2?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
+  isPrimary: boolean;
   notes?: string;
-  address: {
-    street: string;
-    number: string;
-    neighborhood?: string;
-    city: string;
-    state: string;
-    zipCode: string;
-    complement?: string;
-    county?: string;
-    country?: string;
-  };
+  contactName?: string;
+  contactPhone?: string;
 }
 
-export interface UpdateCustomerDto extends Partial<CreateCustomerDto> {}
+export interface CustomerDto {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  isActive: boolean;
+  addresses: CustomerAddressDto[];
+}
 
-// NOVO: Tipo para resposta da sua API
-export interface ApiResponse<T> {
-  success: boolean;
-  data: T;
-  errors: any | null;
+// Requests para API
+export interface ListCustomersRequest {
+  search?: string;
   page?: number;
   pageSize?: number;
-  total?: number;
+}
+
+export interface CreateCustomerRequest {
+  name: string;
+  email?: string;
+  phone?: string;
+  isActive: boolean; 
+  customerAddress?: CustomerAddressDto; 
+  addressIsPrimary: boolean; 
+}
+
+export interface UpdateCustomerRequest {
+  customerId: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  isActive: boolean;
+}
+
+export interface AddCustomerAddressRequest {
+  customerId: string;
+  label?: string;
+  line1?: string;
+  line2?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
+  isPrimary?: boolean;
+  notes?: string;
+  contactName?: string;
+  contactPhone?: string;
+}
+
+export interface UpdateCustomerAddressRequest {
+  customerId: string;
+  addressId: string;
+  label?: string;
+  line1?: string;
+  line2?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
+  notes?: string;
+  contactName?: string;
+  contactPhone?: string;
+}
+
+export interface SetPrimaryCustomerAddressRequest {
+  customerId: string;
+  addressId: string;
+}
+
+export interface DeleteCustomerAddressRequest {
+  customerId: string;
+  addressId: string;
 }
 
 export interface PagedResult<T> {
@@ -67,3 +94,29 @@ export interface PagedResult<T> {
   pageSize: number;
   totalPages: number;
 }
+
+// types/customer.ts - ATUALIZADO
+export interface ApiPaginatedResponse<T> {
+  success: boolean;
+  data: T[];
+  errors?: Record<string, string[]> | null;
+  page?: number | null;
+  pageSize?: number | null;
+  total?: number | null;
+  totalPages?: number | null;
+}
+
+export interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  errors?: Record<string, string[]> ;
+  message?: string;
+}
+
+// Remover a interface antiga ou manter como alias
+export type PaginatedResponse<T> = ApiPaginatedResponse<T>;
+
+// Aliases para compatibilidade
+export type Customer = CustomerDto;
+export type CreateCustomerDto = CreateCustomerRequest;
+export type UpdateCustomerDto = UpdateCustomerRequest;

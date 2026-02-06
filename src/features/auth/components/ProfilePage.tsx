@@ -1,10 +1,11 @@
+// features/auth/components/ProfilePage.tsx - VERSÃO CORRIGIDA
 import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { 
   User, Mail, Phone, Shield, Settings, Calendar, Globe,
   Lock, Eye, EyeOff, Camera, LogOut, Save, X, AlertCircle,
   CheckCircle, Clock, MapPin, Monitor, Smartphone, Tablet,
-  Trash2, Key, Languages, Palette, Bell, Download, Upload
+  Trash2, Key, Upload
 } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/button';
@@ -14,7 +15,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuthStore } from '../stores/auth.store';
 import { 
@@ -25,9 +25,11 @@ import {
   getUserSessions,
   revokeSession,
   revokeAllSessions,
+  getUserPreferences,
+  updatePreferences,
   UserProfile,
   UserSession,
-  ChangePasswordRequest 
+  ChangePasswordRequest
 } from '../api/profile.api';
 import { toast } from '@/hooks/use-toast';
 
@@ -68,9 +70,11 @@ export function ProfilePage() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [isSavingTimezone, setIsSavingTimezone] = useState(false);
   
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [sessions, setSessions] = useState<UserSession[]>([]);
+  const [timezone, setTimezone] = useState('America/Sao_Paulo');
   
   // Estados do formulário
   const [editMode, setEditMode] = useState(false);
@@ -98,41 +102,40 @@ export function ProfilePage() {
   
   // Carregar dados do perfil
   useEffect(() => {
-    loadProfileData();
-    loadSessions();
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Carrega perfil
+        const profileData = await getUserProfile();
+        setProfile(profileData);
+        setProfileData({
+          firstName: profileData.firstName,
+          lastName: profileData.lastName,
+          phone: profileData.phone || '',
+          photoPath: profileData.photoPath || '',
+        });
+        
+        // Carrega sessões (pode retornar array vazio)
+        // const sessionsData = await getUserSessions();
+        // setSessions(sessionsData);
+        
+        // Carrega preferências
+        const preferences = await getUserPreferences();
+        if (preferences.timezone) {
+          setTimezone(preferences.timezone);
+        }
+        
+      } catch (err: any) {
+        console.error('Error loading profile data:', err);
+        setError(t('profile.updateError'));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadData();
   }, []);
-  
-  const loadProfileData = async () => {
-    try {
-      setIsLoading(true);
-      const data = await getUserProfile();
-      setProfile(data);
-      setProfileData({
-        firstName: data.firstName,
-        lastName: data.lastName,
-        phone: data.phone || '',
-        photoPath: data.photoPath || '',
-      });
-    } catch (err: any) {
-      setError(err.response?.data?.message || t('profile.updateError'));
-      toast({
-        title: t('common.error'),
-        description: t('profile.updateError'),
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  
-  const loadSessions = async () => {
-    try {
-      const data = await getUserSessions();
-      setSessions(data);
-    } catch (err) {
-      console.error('Failed to load sessions:', err);
-    }
-  };
   
   const handleProfileUpdate = async () => {
     if (!profile) return;
@@ -156,7 +159,6 @@ export function ProfilePage() {
         description: t('profile.updateSuccess'),
       });
       
-      // Limpar mensagem após 3 segundos
       setTimeout(() => setSuccess(''), 3000);
     } catch (err: any) {
       setError(err.response?.data?.message || t('profile.updateError'));
@@ -217,6 +219,28 @@ export function ProfilePage() {
     }
   };
   
+  const handleTimezoneSave = async () => {
+    try {
+      setIsSavingTimezone(true);
+      
+      await updatePreferences({ timezone });
+      
+      toast({
+        title: t('common.success'),
+        description: t('profile.timezoneUpdated'),
+      });
+      
+    } catch (err: any) {
+      toast({
+        title: t('common.error'),
+        description: err.response?.data?.message || t('profile.timezoneError'),
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSavingTimezone(false);
+    }
+  };
+  
   const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -225,7 +249,7 @@ export function ProfilePage() {
     if (!file.type.startsWith('image/')) {
       toast({
         title: t('common.error'),
-        description: 'Por favor, selecione um arquivo de imagem',
+        description: t('profile.selectImageFile'),
         variant: 'destructive',
       });
       return;
@@ -234,7 +258,7 @@ export function ProfilePage() {
     if (file.size > 5 * 1024 * 1024) { // 5MB
       toast({
         title: t('common.error'),
-        description: 'Arquivo muito grande. Máximo 5MB',
+        description: t('profile.fileTooLarge'),
         variant: 'destructive',
       });
       return;
@@ -256,12 +280,11 @@ export function ProfilePage() {
     } catch (err: any) {
       toast({
         title: t('common.error'),
-        description: err.response?.data?.message || 'Erro ao fazer upload da foto',
+        description: err.response?.data?.message || t('profile.photoUploadError'),
         variant: 'destructive',
       });
     } finally {
       setIsUploadingPhoto(false);
-      // Limpar input
       event.target.value = '';
     }
   };
@@ -269,18 +292,15 @@ export function ProfilePage() {
   const handleRemovePhoto = async () => {
     try {
       setIsUploadingPhoto(true);
-      // Chamada para remover foto (implementar no backend)
-      // await removeProfilePhoto();
-      
       setProfile(prev => prev ? { ...prev, photoPath: '' } : null);
       toast({
         title: t('common.success'),
-        description: 'Foto removida com sucesso',
+        description: t('profile.photoRemoved'),
       });
     } catch (err: any) {
       toast({
         title: t('common.error'),
-        description: 'Erro ao remover foto',
+        description: t('profile.removePhotoError'),
         variant: 'destructive',
       });
     } finally {
@@ -294,12 +314,12 @@ export function ProfilePage() {
       setSessions(prev => prev.filter(s => s.id !== sessionId));
       toast({
         title: t('common.success'),
-        description: 'Sessão revogada com sucesso',
+        description: t('profile.sessionRevoked'),
       });
     } catch (err) {
       toast({
         title: t('common.error'),
-        description: 'Erro ao revogar sessão',
+        description: t('profile.revokeSessionError'),
         variant: 'destructive',
       });
     }
@@ -311,12 +331,12 @@ export function ProfilePage() {
       setSessions([]);
       toast({
         title: t('common.success'),
-        description: 'Todas as sessões foram revogadas',
+        description: t('profile.allSessionsRevoked'),
       });
     } catch (err) {
       toast({
         title: t('common.error'),
-        description: 'Erro ao revogar sessões',
+        description: t('profile.revokeAllError'),
         variant: 'destructive',
       });
     }
@@ -328,7 +348,11 @@ export function ProfilePage() {
   
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString();
+    try {
+      return new Date(dateString).toLocaleDateString();
+    } catch {
+      return 'Invalid date';
+    }
   };
   
   const getDeviceIcon = (device: string) => {
@@ -356,8 +380,8 @@ export function ProfilePage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center space-y-4">
           <AlertCircle className="h-12 w-12 text-destructive mx-auto" />
-          <p className="text-muted-foreground">Erro ao carregar perfil</p>
-          <Button onClick={loadProfileData}>Tentar novamente</Button>
+          <p className="text-muted-foreground">{t('profile.errorLoadingProfile')}</p>
+          <Button onClick={() => window.location.reload()}>{t('profile.tryAgain')}</Button>
         </div>
       </div>
     );
@@ -370,7 +394,7 @@ export function ProfilePage() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight">{t('profile.title')}</h1>
           <p className="text-muted-foreground mt-2">
-            Gerencie suas informações pessoais, segurança e preferências
+            {t('profile.managePersonalInfo')}, {t('profile.manageSecurity')} {t('profile.managePreferences')}
           </p>
         </div>
         
@@ -498,7 +522,7 @@ export function ProfilePage() {
                   onClick={() => logout()}
                 >
                   <LogOut className="h-4 w-4 mr-2" />
-                  Sair
+                  {t('common.close')}
                 </Button>
               </CardFooter>
             </Card>
@@ -553,7 +577,7 @@ export function ProfilePage() {
                       <div>
                         <CardTitle>{t('profile.personalInfo')}</CardTitle>
                         <CardDescription>
-                          Gerencie suas informações pessoais
+                          {t('profile.managePersonalInfo')}
                         </CardDescription>
                       </div>
                       <Button
@@ -612,7 +636,7 @@ export function ProfilePage() {
                         />
                         <div className="flex items-center gap-2 text-sm">
                           {profile.emailConfirmed ? (
-                            <Badge default="success" className="gap-1">
+                            <Badge variant="default" className="gap-1">
                               <CheckCircle className="h-3 w-3" />
                               {t('profile.verified')}
                             </Badge>
@@ -637,7 +661,7 @@ export function ProfilePage() {
                         />
                         <div className="flex items-center gap-2 text-sm">
                           {profile.phoneConfirmed ? (
-                            <Badge variant="success" className="gap-1">
+                            <Badge variant="default" className="gap-1">
                               <CheckCircle className="h-3 w-3" />
                               {t('profile.verified')}
                             </Badge>
@@ -728,7 +752,7 @@ export function ProfilePage() {
                   <CardHeader>
                     <CardTitle>{t('profile.security')}</CardTitle>
                     <CardDescription>
-                      Gerencie suas configurações de segurança
+                      {t('profile.manageSecurity')}
                     </CardDescription>
                   </CardHeader>
                   
@@ -739,7 +763,7 @@ export function ProfilePage() {
                         <div>
                           <h3 className="font-medium">{t('profile.changePassword')}</h3>
                           <p className="text-sm text-muted-foreground">
-                            Atualize sua senha regularmente para manter sua conta segura
+                            {t('profile.manageSecurity')}
                           </p>
                         </div>
                         <Button
@@ -764,7 +788,7 @@ export function ProfilePage() {
                         <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
                           <div className="space-y-2">
                             <label className="text-sm font-medium">
-                              Senha Atual
+                              {t('profile.currentPassword')}
                             </label>
                             <div className="relative">
                               <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -773,7 +797,7 @@ export function ProfilePage() {
                                 value={passwordData.currentPassword}
                                 onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
                                 className="pl-10"
-                                placeholder="Digite sua senha atual"
+                                placeholder={t('profile.currentPassword')}
                               />
                               <button
                                 type="button"
@@ -791,7 +815,7 @@ export function ProfilePage() {
                           
                           <div className="space-y-2">
                             <label className="text-sm font-medium">
-                              Nova Senha
+                              {t('profile.newPassword')}
                             </label>
                             <div className="relative">
                               <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -800,7 +824,7 @@ export function ProfilePage() {
                                 value={passwordData.newPassword}
                                 onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
                                 className="pl-10"
-                                placeholder="Digite sua nova senha"
+                                placeholder={t('profile.newPassword')}
                               />
                               <button
                                 type="button"
@@ -838,7 +862,7 @@ export function ProfilePage() {
                           
                           <div className="space-y-2">
                             <label className="text-sm font-medium">
-                              Confirmar Nova Senha
+                              {t('profile.confirmPassword')}
                             </label>
                             <div className="relative">
                               <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -853,7 +877,7 @@ export function ProfilePage() {
                                       : 'border-red-500'
                                     : ''
                                 }`}
-                                placeholder="Confirme sua nova senha"
+                                placeholder={t('profile.confirmPassword')}
                               />
                               <button
                                 type="button"
@@ -878,7 +902,7 @@ export function ProfilePage() {
                                   <AlertCircle className="h-3 w-3" />
                                 )}
                                 <span>
-                                  {passwordsMatch ? 'Senhas coincidem' : 'Senhas não coincidem'}
+                                  {passwordsMatch ? t('profile.passwordsMatch') : t('profile.passwordsDontMatch')}
                                 </span>
                               </div>
                             )}
@@ -896,21 +920,6 @@ export function ProfilePage() {
                           </Button>
                         </div>
                       )}
-                    </div>
-                    
-                    <Separator />
-                    
-                    {/* Two-Factor Authentication */}
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h3 className="font-medium">{t('profile.twoFactor')}</h3>
-                          <p className="text-sm text-muted-foreground">
-                            Adicione uma camada extra de segurança à sua conta
-                          </p>
-                        </div>
-                        <Switch />
-                      </div>
                     </div>
                     
                     <Separator />
@@ -938,9 +947,9 @@ export function ProfilePage() {
               <TabsContent value="preferences">
                 <Card className="bg-card/80 backdrop-blur-sm border-border">
                   <CardHeader>
-                    <CardTitle>{t('profile.preferences')}</CardTitle>
+                    <CardTitle>{t('profile.settings')}</CardTitle>
                     <CardDescription>
-                      Personalize sua experiência na plataforma
+                      {t('profile.configureSystem')}
                     </CardDescription>
                   </CardHeader>
                   
@@ -948,117 +957,50 @@ export function ProfilePage() {
                     <div className="space-y-4">
                       <div className="space-y-2">
                         <label className="text-sm font-medium">
-                          {t('profile.language')}
-                        </label>
-                        <Select defaultValue="pt">
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione um idioma" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="pt">
-                              <div className="flex items-center gap-2">
-                                <span>🇧🇷</span>
-                                <span>Português</span>
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="en">
-                              <div className="flex items-center gap-2">
-                                <span>🇺🇸</span>
-                                <span>English</span>
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="es">
-                              <div className="flex items-center gap-2">
-                                <span>🇪🇸</span>
-                                <span>Español</span>
-                              </div>
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">
-                          {t('profile.theme')}
-                        </label>
-                        <Select defaultValue="system">
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione um tema" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="light">
-                              <div className="flex items-center gap-2">
-                                <Palette className="h-4 w-4" />
-                                <span>{t('common.light')}</span>
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="dark">
-                              <div className="flex items-center gap-2">
-                                <Palette className="h-4 w-4" />
-                                <span>{t('common.dark')}</span>
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="system">
-                              <div className="flex items-center gap-2">
-                                <Settings className="h-4 w-4" />
-                                <span>{t('common.system')}</span>
-                              </div>
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">
                           {t('profile.timezone')}
                         </label>
-                        <Select defaultValue="America/Sao_Paulo">
+                        <Select 
+                          value={timezone} 
+                          onValueChange={setTimezone}
+                        >
                           <SelectTrigger>
-                            <SelectValue placeholder="Selecione um fuso horário" />
+                            <SelectValue placeholder={t('profile.timezone')} />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="America/Sao_Paulo">Brasília (GMT-3)</SelectItem>
-                            <SelectItem value="America/New_York">Nova York (GMT-5)</SelectItem>
-                            <SelectItem value="Europe/London">Londres (GMT+0)</SelectItem>
+                            <SelectItem value="America/New_York">New York (GMT-5)</SelectItem>
+                            <SelectItem value="Europe/London">London (GMT+0)</SelectItem>
                             <SelectItem value="Europe/Paris">Paris (GMT+1)</SelectItem>
-                            <SelectItem value="Asia/Tokyo">Tóquio (GMT+9)</SelectItem>
+                            <SelectItem value="Asia/Tokyo">Tokyo (GMT+9)</SelectItem>
+                            <SelectItem value="America/Los_Angeles">Los Angeles (GMT-8)</SelectItem>
+                            <SelectItem value="America/Chicago">Chicago (GMT-6)</SelectItem>
+                            <SelectItem value="Asia/Singapore">Singapore (GMT+8)</SelectItem>
+                            <SelectItem value="Australia/Sydney">Sydney (GMT+10)</SelectItem>
                           </SelectContent>
                         </Select>
-                      </div>
-                    </div>
-                    
-                    <Separator />
-                    
-                    <div className="space-y-4">
-                      <h3 className="font-medium">Notificações</h3>
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-sm font-medium">Notificações por Email</p>
-                            <p className="text-sm text-muted-foreground">
-                              Receba atualizações importantes por email
-                            </p>
-                          </div>
-                          <Switch defaultChecked />
-                        </div>
-                        
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-sm font-medium">Notificações Push</p>
-                            <p className="text-sm text-muted-foreground">
-                              Receba notificações no navegador
-                            </p>
-                          </div>
-                          <Switch />
-                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {t('profile.affectsSchedule')}
+                        </p>
                       </div>
                     </div>
                   </CardContent>
                   
                   <CardFooter className="flex justify-end">
-                    <Button>
-                      <Save className="h-4 w-4 mr-2" />
-                      {t('common.save')}
+                    <Button 
+                      onClick={handleTimezoneSave}
+                      disabled={isSavingTimezone}
+                    >
+                      {isSavingTimezone ? (
+                        <>
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent mr-2" />
+                          {t('common.saving')}
+                        </>
+                      ) : (
+                        <>
+                          <Save className="h-4 w-4 mr-2" />
+                          {t('common.save')}
+                        </>
+                      )}
                     </Button>
                   </CardFooter>
                 </Card>
@@ -1072,7 +1014,7 @@ export function ProfilePage() {
                       <div>
                         <CardTitle>{t('profile.sessions')}</CardTitle>
                         <CardDescription>
-                          Gerencie suas sessões ativas em diferentes dispositivos
+                          {t('profile.manageActivity')}
                         </CardDescription>
                       </div>
                       {sessions.length > 1 && (
@@ -1093,10 +1035,11 @@ export function ProfilePage() {
                       {sessions.length === 0 ? (
                         <div className="text-center py-8">
                           <Globe className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                          <p className="text-muted-foreground">Nenhuma sessão ativa</p>
+                          <p className="text-muted-foreground">{t('profile.noActiveSessions')}</p>
                         </div>
                       ) : (
-                        sessions.map((session) => (
+                        // Usando optional chaining para segurança
+                        sessions?.map?.((session) => (
                           <div
                             key={session.id}
                             className={`flex items-center justify-between p-4 border rounded-lg ${
@@ -1113,7 +1056,7 @@ export function ProfilePage() {
                                   <p className="font-medium">{session.device}</p>
                                   {session.current && (
                                     <Badge variant="default" className="text-xs">
-                                      Atual
+                                      {t('profile.current')}
                                     </Badge>
                                   )}
                                 </div>

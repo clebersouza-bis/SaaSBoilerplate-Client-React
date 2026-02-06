@@ -1,54 +1,81 @@
-// lib/api/client.ts - VERSÃO DIRETA E FUNCIONAL
+// lib/api/client.ts
 import axios from 'axios';
+import { toast } from '@/hooks/use-toast';
+import { PermissionErrorEvent } from '@/types/errors';
 
 declare module 'axios' {
   interface AxiosRequestConfig {
     skipAuth?: boolean;
+    skipErrorToast?: boolean;
+    skipPermissionErrorModal?: boolean;
+    resource?: string;
+    action?: string;
   }
 }
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://localhost:7064';
+const getApiBaseUrl = () => {
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    if (window.location.port === '5173' || window.location.port === '') {
+      return 'https://localhost:7064/api';
+    }
+  }
+  
+  return '/api';
+};
+
+const API_BASE_PATH = getApiBaseUrl();
 
 const api = axios.create({
-  baseURL: `${API_URL}/api`,
+  baseURL: API_BASE_PATH,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Token storage (simples e direto)
 let authToken: string | null = null;
 
-// Export função para setar token
 export function setAuthToken(token: string | null) {
   authToken = token;
-  console.log('[Axios] Token set:', token ? 'YES' : 'NO');
 }
 
-// Request interceptor DIRETO
+// Emitir eventos personalizados para erros de permissão
+const emitPermissionError = (errorData: {
+  status: number;
+  message: string;
+  resource?: string;
+  action?: string;
+  url?: string;
+  method?: string;
+}) => {
+  const event = new CustomEvent<PermissionErrorEvent>('permissionError', {
+    detail: {
+      status: errorData.status,
+      message: errorData.message,
+      resource: errorData.resource,
+      action: errorData.action,
+      url: errorData.url,
+      method: errorData.method,
+      timestamp: new Date().toISOString()
+    }
+  });
+  window.dispatchEvent(event);
+};
+
+// Request interceptor
 api.interceptors.request.use(
   (config) => {
-    console.log('[Axios] Request to:', config.url);
-    
-    // Skip auth para login/refresh
     if (config.skipAuth) {
-      console.log('[Axios] Skipping auth for:', config.url);
       return config;
     }
 
-    // Adiciona token se existir
     if (authToken) {
       config.headers.Authorization = `Bearer ${authToken}`;
-      console.log('[Axios] ✓ Token added to headers');
-    } else {
-      console.warn('[Axios] ✗ No token available for:', config.url);
     }
 
     return config;
   },
   (error) => {
-    console.error('[Axios] Request error:', error);
     return Promise.reject(error);
   }
 );
@@ -56,43 +83,136 @@ api.interceptors.request.use(
 // Response interceptor
 api.interceptors.response.use(
   (response) => {
-    console.log('[Axios] Response:', response.status, response.config.url);
     return response;
   },
   async (error) => {
     const originalRequest = error.config;
-    
-    console.log('[Axios] Error:', error.response?.status, error.config?.url);
-    
-    // Se não é 401, ou já tentou refresh, ou skipAuth
-    if (error.response?.status !== 401 || originalRequest?._retry || originalRequest?.skipAuth) {
+    const status = error.response?.status;
+    const url = originalRequest?.url || '';
+    const method = originalRequest?.method?.toUpperCase() || '';
+    const skipPermissionModal = originalRequest?.skipPermissionErrorModal;
+    const resource = originalRequest?.resource;
+    const action = originalRequest?.action;
+
+    // Tratamento específico para 403
+    if (status === 403 && !skipPermissionModal) {
+      // Emitir evento de erro de permissão
+      emitPermissionError({
+        status: 403,
+        message: error.response?.data?.message || 'Access denied',
+        resource: resource || inferResourceFromUrl(url),
+        action: action || inferActionFromMethod(method),
+        url,
+        method
+      });
+    }
+
+    // Não mostrar toast para erros de permissão se estamos mostrando modal
+    if (status === 403 && !skipPermissionModal) {
+      // Não mostrar toast, apenas retornar o erro
       return Promise.reject(error);
     }
-    
-    originalRequest._retry = true;
-    console.log('[Axios] Attempting token refresh...');
-    
-    try {
-      // Import dinâmico para evitar circular deps
-      const { useAuthStore } = await import('@/features/auth/stores/auth.store');
-      const store = useAuthStore.getState();
-      const success = await store.refreshToken();
-      
-      if (success) {
-        // Atualiza token local
-        authToken = useAuthStore.getState().token;
-        originalRequest.headers.Authorization = `Bearer ${authToken}`;
-        console.log('[Axios] Retrying with new token');
-        return api(originalRequest);
-      } else {
-        console.error('[Axios] Refresh failed');
-        return Promise.reject(error);
+
+    // Toast para outros erros
+    if (!originalRequest?.skipErrorToast && error.response) {
+      switch (status) {
+        case 401:
+          if (!originalRequest?._retry && !originalRequest?.skipAuth) {
+            toast({
+              title: 'Session Expired',
+              description: 'Please login again',
+              variant: 'destructive',
+            });
+          }
+          break;
+          
+        case 400:
+          const errorMessage = error.response.data?.errors?.[0] || 
+                             error.response.data?.message || 
+                             'Validation error';
+          toast({
+            title: 'Validation Error',
+            description: errorMessage,
+            variant: 'destructive',
+          });
+          break;
+          
+        case 404:
+          toast({
+            title: 'Not Found',
+            description: 'The requested resource was not found',
+            variant: 'destructive',
+          });
+          break;
+          
+        case 500:
+        case 502:
+        case 503:
+          toast({
+            title: 'Server Error',
+            description: 'Please try again later',
+            variant: 'destructive',
+          });
+          break;
+          
+        default:
+          toast({
+            title: `Error ${status}`,
+            description: 'An unexpected error occurred',
+            variant: 'destructive',
+          });
       }
-    } catch (refreshError) {
-      console.error('[Axios] Refresh error:', refreshError);
-      return Promise.reject(refreshError);
+    } else if (error.request && !originalRequest?.skipErrorToast) {
+      toast({
+        title: 'Network Error',
+        description: 'Please check your internet connection',
+        variant: 'destructive',
+      });
     }
+
+    // Refresh token para 401
+    if (status === 401 && !originalRequest?._retry && !originalRequest?.skipAuth) {
+      originalRequest._retry = true;
+      
+      try {
+        const { useAuthStore } = await import('@/features/auth/stores/auth.store');
+        const store = useAuthStore.getState();
+        const success = await store.refreshToken();
+        
+        if (success) {
+          authToken = useAuthStore.getState().token;
+          originalRequest.headers.Authorization = `Bearer ${authToken}`;
+          return api(originalRequest);
+        }
+      } catch (refreshError) {
+        console.error('[Axios] Refresh error:', refreshError);
+      }
+    }
+    
+    return Promise.reject(error);
   }
 );
+
+// Funções auxiliares para inferir recurso e ação
+function inferResourceFromUrl(url: string): string {
+  if (url.includes('/customers')) return 'customers';
+  if (url.includes('/users')) return 'users';
+  if (url.includes('/roles')) return 'roles';
+  if (url.includes('/products')) return 'products';
+  if (url.includes('/orders')) return 'orders';
+  if (url.includes('/settings')) return 'settings';
+  return 'resource';
+}
+
+function inferActionFromMethod(method: string): string {
+  switch (method) {
+    case 'GET': return 'view';
+    case 'POST': return 'create';
+    case 'PUT': return 'update';
+    case 'PATCH': return 'modify';
+    case 'DELETE': return 'delete';
+    default: return 'access';
+  }
+}
 
 export default api;

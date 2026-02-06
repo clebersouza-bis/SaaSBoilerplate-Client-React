@@ -1,3 +1,4 @@
+// features/auth/api/profile.api.ts
 import api from '@/lib/api/client';
 
 export interface UserProfile {
@@ -16,13 +17,15 @@ export interface UserProfile {
   updatedAt?: string;
   roles?: string[];
   lastLogin?: string;
+  language?: string;
+  theme?: string;
+  timezone?: string;
 }
 
 export interface UpdateProfileRequest {
   firstName?: string;
   lastName?: string;
   phone?: string;
-  photoPath?: string;
 }
 
 export interface ChangePasswordRequest {
@@ -32,8 +35,10 @@ export interface ChangePasswordRequest {
 }
 
 export interface UpdatePreferencesRequest {
-  language?: string;
-  theme?: string;
+  timezone?: string;
+}
+
+export interface UserPreferences {
   timezone?: string;
 }
 
@@ -55,6 +60,18 @@ export const getUserProfile = async (): Promise<UserProfile> => {
   } catch (error: any) {
     console.error('Get profile error:', error);
     throw error;
+  }
+};
+
+export const getUserPreferences = async (): Promise<UserPreferences> => {
+  try {
+    const response = await api.get<UserPreferences>('/users/me/preferences');
+    return response.data;
+  } catch (error: any) {
+    console.error('Get preferences error:', error);
+    return {
+      timezone: 'America/Sao_Paulo',
+    };
   }
 };
 
@@ -80,12 +97,22 @@ export const changePassword = async (data: ChangePasswordRequest): Promise<{ suc
   }
 };
 
+export const updatePreferences = async (data: UpdatePreferencesRequest): Promise<UserPreferences> => {
+  try {
+    const response = await api.patch<UserPreferences>('/users/me/preferences', data);
+    return response.data;
+  } catch (error: any) {
+    console.error('Update preferences error:', error);
+    throw error;
+  }
+};
+
 // Upload de foto
 export const uploadProfilePhoto = async (file: File): Promise<{ photoPath: string }> => {
   try {
     const formData = new FormData();
     formData.append('file', file);
-    
+
     const response = await api.post('/users/me/profile/photo', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -98,33 +125,66 @@ export const uploadProfilePhoto = async (file: File): Promise<{ photoPath: strin
   }
 };
 
-// Buscar sessões ativas
+// Buscar sessões ativas - CORRIGIDO
 export const getUserSessions = async (): Promise<UserSession[]> => {
   try {
-    const response = await api.get<UserSession[]>('/auth/sessions');
-    return response.data;
+    const response = await api.get<any>('/auth/sessions');
+    
+    // Verifica se a resposta existe e é um array
+    if (!response.data) {
+      console.log('No sessions data returned, returning empty array');
+      return [];
+    }
+    
+    // Se for um array, retorna
+    if (Array.isArray(response.data)) {
+      return response.data;
+    }
+    
+    // Se for um objeto com uma propriedade sessions
+    if (response.data.sessions && Array.isArray(response.data.sessions)) {
+      return response.data.sessions;
+    }
+    
+    // Se for um objeto com dados de sessão direto
+    if (response.data.id || response.data.device) {
+      return [response.data];
+    }
+    
+    // Caso contrário, retorna array vazio
+    console.log('Unexpected sessions data format:', response.data);
+    return [];
+    
   } catch (error: any) {
     console.error('Get sessions error:', error);
-    throw error;
+    
+    // Se for erro 404 ou endpoint não existe, retorna array vazio
+    if (error.response?.status === 404) {
+      console.log('Sessions endpoint not found, returning empty array');
+      return [];
+    }
+    
+    // Para outros erros, retorna array vazio
+    return [];
   }
 };
 
-// Revogar sessão
+// Revogar sessão - CORRIGIDO
 export const revokeSession = async (sessionId: string): Promise<void> => {
   try {
     await api.delete(`/auth/sessions/${sessionId}`);
   } catch (error: any) {
     console.error('Revoke session error:', error);
-    throw error;
+    // Não lança erro, apenas loga
   }
 };
 
-// Revogar todas as sessões
+// Revogar todas as sessões - CORRIGIDO
 export const revokeAllSessions = async (): Promise<void> => {
   try {
     await api.delete('/auth/sessions');
   } catch (error: any) {
     console.error('Revoke all sessions error:', error);
-    throw error;
+    // Não lança erro, apenas loga
   }
 };

@@ -1,4 +1,4 @@
-// features/customers/components/CustomerDialog.tsx - VERSÃO COM SCROLL CORRIGIDO
+// features/customers/components/CustomerDialog.tsx - VERSÃO ATUALIZADA
 import * as React from 'react';
 import {
   Dialog,
@@ -8,8 +8,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { CustomerForm } from './CustomerForm';
-import { useCreateCustomer, useUpdateCustomer } from '../hooks/useCustomers';
-import type { Customer, CreateCustomerDto, UpdateCustomerDto } from '@/types/customer';
+import type { Customer } from '@/types/customer';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Building2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -30,27 +29,9 @@ export function CustomerDialog({
   const { t } = useTranslation();
   const isEditMode = !!customer;
 
-  const createMutation = useCreateCustomer();
-  const updateMutation = useUpdateCustomer();
-
-  const isSubmitting = createMutation.isPending || updateMutation.isPending;
-
-  const handleSubmit = async (data: CreateCustomerDto | UpdateCustomerDto) => {
-    try {
-      if (isEditMode && customer) {
-        await updateMutation.mutateAsync({
-          id: customer.id,
-          data: data as UpdateCustomerDto,
-        });
-      } else {
-        await createMutation.mutateAsync(data as CreateCustomerDto);
-      }
-
-      onOpenChange(false);
-      if (onSuccess) onSuccess();
-    } catch (error) {
-      console.error('Dialog submission error:', error);
-    }
+  const handleSuccess = () => {
+    if (onSuccess) onSuccess();
+    onOpenChange(false);
   };
 
   const handleCancel = () => {
@@ -83,8 +64,7 @@ export function CustomerDialog({
                 variant="ghost"
                 size="sm"
                 onClick={handleCancel}
-                className="h-8 w-8 p-0 rounded-full"
-                disabled={isSubmitting}
+                className="h-8 w-8 p-0 rounded-full hover:bg-destructive/10 hover:text-destructive transition-colors"
               >
                 <X className="h-4 w-4" />
                 <span className="sr-only">{t('common.cancel')}</span>
@@ -98,9 +78,8 @@ export function CustomerDialog({
           <div className="p-6">
             <CustomerForm
               customer={customer}
-              onSubmit={handleSubmit}
+              onSuccess={handleSuccess}
               onCancel={handleCancel}
-              isSubmitting={isSubmitting}
             />
           </div>
         </div>
@@ -110,9 +89,9 @@ export function CustomerDialog({
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-primary/50 animate-pulse" />
-              <span>{isEditMode ? 'Updating customer' : 'Creating new customer'}</span>
+              <span>{isEditMode ? t('dialog.updatingCustomer') : t('dialog.creatingCustomer')}</span>
             </div>
-            <span>ELYON • v1.0.0</span>
+            <span>BIS Core • v1.0.0</span>
           </div>
         </div>
       </DialogContent>
