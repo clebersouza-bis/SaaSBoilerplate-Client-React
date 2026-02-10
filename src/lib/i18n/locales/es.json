@@ -51,7 +51,7 @@
     "confirmDelete": "Confirmar Eliminación",
     "closeAccount": "Cerrar Cuenta",
     "profilePicture": "Foto de Perfil",
-     "profilePicture": "Foto de Perfil",
+    "profilePicture": "Foto de Perfil",
     "managePersonalInfo": "Gestiona tu información personal",
     "manageSecurity": "Gestiona tu configuración de seguridad",
     "managePreferences": "Configura preferencias del sistema",
@@ -124,8 +124,6 @@
     "refresh": "Actualizar",
     "status": "Estado",
     "dismiss": "Descartar"
-
-
   },
   "auth": {
     "logout": "Cerrar Sesión",
@@ -265,8 +263,7 @@
     "passwordsDontMatch": "Las contraseñas no coinciden",
     "creatingAccount": "Creando su cuenta...",
     "createAccount": "Crear Cuenta",
-"byCreatingAccountYouAgree": "Al crear su cuenta, usted acepta nuestros términos y condiciones"    
-    
+    "byCreatingAccountYouAgree": "Al crear su cuenta, usted acepta nuestros términos y condiciones"
   },
   "navigation": {
     "dashboard": "Dashboard",
@@ -293,7 +290,7 @@
     "default": "Por defecto",
     "permissions": "{{count}} permisos"
   },
- "customer": {
+  "customer": {
     "title": "Clientes",
     "create": "Crear Cliente",
     "edit": "Editar Cliente",
@@ -418,7 +415,7 @@
     "conversionRate": "Tasa de Conversión",
     "activeTenants": "Tenants Activos"
   },
- "errors": {
+  "errors": {
     "required": "Este campo es obligatorio",
     "email": "Dirección de correo electrónico no válida",
     "minLength": "Debe tener al menos {{count}} caracteres",
@@ -463,8 +460,8 @@
     "confirm": "Confirmar Cambio",
     "updatingCustomer": "Actualizando cliente",
     "creatingCustomer": "Creando nuevo cliente",
-     "delete": "Eliminar",
-    "archive": "Archivar", 
+    "delete": "Eliminar",
+    "archive": "Archivar",
     "deactivate": "Desactivar",
     "activate": "Activar",
     "logout": "Cerrar Sesión",
@@ -478,7 +475,7 @@
     "saving": "Guardando...",
     "searching": "Buscando...",
     "loadingCustomers": "Cargando clientes...",
-    "errorLoadingCustomers": "Error al cargar clientes"    
+    "errorLoadingCustomers": "Error al cargar clientes"
   },
   "table": {
     "allCustomers": "Todos los Clientes",
@@ -506,8 +503,7 @@
     "confirmDelete": "¿Estás seguro de que deseas eliminar este cliente? Esta acción no se puede deshacer.",
     "filtersAndSearch": "Filtros y Búsqueda",
     "showingItems": "Mostrando {{start}}-{{end}} de {{total}} ítems",
-    "showingResultsFor": "Mostrando {count} resultados para \"{search}\""    
-
+    "showingResultsFor": "Mostrando {count} resultados para \"{search}\""
   },
   "settings": {
     "title": "Configuración",
@@ -517,7 +513,7 @@
     "saveChanges": "Guardar Cambios",
     "lastUpdated": "Última actualización",
     "auditNote": "Todos los cambios se registran y auditan con fines de seguridad",
-    "comingSoon": "Próximamente",   
+    "comingSoon": "Próximamente",
     "users": "Usuarios",
     "usersDescription": "Gestionar usuarios y sus permisos",
     "usersManagementDescription": "Gestionar todos los usuarios del sistema",
@@ -561,7 +557,7 @@
     "noRole": "Sin rol",
     "editUserDescription": "Editar información del usuario",
     "createUserDescription": "Crear un nuevo usuario",
-    "neverLoggedIn": "Nunca ha iniciado sesión", 
+    "neverLoggedIn": "Nunca ha iniciado sesión",
     "rolesManagementDescription": "Gestionar roles y sus permisos",
     "totalRoles": "Roles Totales",
     "activeRoles": "Roles Activos",
@@ -604,7 +600,7 @@
     "createRoleDescription": "Crear un nuevo rol con permisos específicos",
     "deselectAll": "Deseleccionar Todos",
     "selectAll": "Seleccionar Todos",
-    "noDescription": "Sin descripción",  
+    "noDescription": "Sin descripción",
     "systemDescription": "Configuraciones generales del sistema",
     "systemHealth": "Salud del Sistema",
     "integrations": "Integraciones",
@@ -616,7 +612,7 @@
     "roleStatus": "Estado del Rol",
     "noPermissionsAvailable": "No hay permisos disponibles",
     "noRolesAvailable": "No hay roles disponibles",
-    "lastLogin" : "Última Sesión",
+    "lastLogin": "Última Sesión",
     "rolesDescription": "Roles y responsabilidades",
     "summary": "Resumen",
     "totalPermissions": "Total de Permisos",
@@ -631,9 +627,21 @@
     "confirmActivateRole": "Activar Rol",
     "activateRoleWarning": "Esto dará acceso a {count} usuarios. ¿Estás seguro?",
     "usersAffected": "usuarios serán afectados",
-    "roleNameRequired": "El nombre del rol es obligatorio"    
+    "roleNameRequired": "El nombre del rol es obligatorio",
+    "allPermissionsSelected": "Todos los permisos seleccionados",
+    "allPermissionsDeselected": "Todos los permisos deseleccionados",
+    "allGroupsCollapsed": "Todos los grupos colapsados",
+    "allGroupsExpanded": "Todos los grupos expandidos",
+    "toggleAllGroups": "Alternar todos los grupos",
+    "allSelected": "Todos seleccionados",
+    "partial": "Parcial",
+    "noneSelected": "Ninguno seleccionado",
+    "available": "disponible",
+    "complete": "completado",
+    "completeGroups": "grupos completados",
+    "ofTotalPermissions": "de permisos totales"
   },
-    "stats": {
+  "stats": {
     "totalCustomers": "Total de Clientes",
     "totalCustomersDesc": "Todos los clientes del sistema",
     "activeCustomers": "Clientes Activos",

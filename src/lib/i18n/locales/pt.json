@@ -637,7 +637,21 @@
     "confirmActivateRole": "Ativar Função",
     "activateRoleWarning": "Isso dará acesso a {count} usuários. Tem certeza?",
     "usersAffected": "usuários serão afetados",
-    "roleNameRequired": "Nome da função é obrigatório"
+    "roleNameRequired": "Nome da função é obrigatório",
+      "allPermissionsSelected": "Todas as permissões selecionadas",
+  "allPermissionsDeselected": "Todas as permissões desmarcadas",
+  "allGroupsCollapsed": "Todos os grupos recolhidos",
+  "allGroupsExpanded": "Todos os grupos expandidos",
+  "toggleAllGroups": "Alternar todos os grupos",
+  
+  "allSelected": "Todas selecionadas",
+  "partial": "Parcial",
+  "noneSelected": "Nenhuma selecionada",
+  
+  "available": "Disponível",
+  "complete": "completo",
+  "completeGroups": "grupos completos",
+  "ofTotalPermissions": "de total de permissões"
   },
     "stats": {
     "totalCustomers": "Total de Clientes",
