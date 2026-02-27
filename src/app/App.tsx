@@ -5,7 +5,7 @@ import { RouterProvider } from '@tanstack/react-router';
 import { AuthProvider } from '@/features/auth/components/AuthProvider';
 import { router } from './router';
 import { DebugPermissions } from '@/components/DebugPermissions';
-import { Toaster } from '@/components/ui/toaster';
+import { Toaster } from 'sonner';
 import { PermissionErrorProvider } from '@/components/providers/PermissionErrorProvider';
 
 const queryClient = new QueryClient({
@@ -26,12 +26,17 @@ export function App() {
         <PermissionErrorProvider>
           {/* Componentes de debug DEVEM ficar DENTRO do AuthProvider */}
           <DebugPermissions />
-          
-          {/* APENAS UM RouterProvider */}
+
+          {/* just one RouterProvider */}
           <RouterProvider router={router} />
-          
-          {/* Toaster para notificações */}
-          <Toaster />
+
+          {/* Toaster for notifications */}
+          <Toaster
+            position="top-right"
+            richColors
+            closeButton
+            duration={3000}
+          />
         </PermissionErrorProvider>
       </AuthProvider>
     </QueryClientProvider>

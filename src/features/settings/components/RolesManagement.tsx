@@ -1,4 +1,4 @@
-// features/settings/components/RolesManagement.tsx - VERSÃO ATUALIZADA
+// features/settings/components/RolesManagement.tsx - VERSÃO FINAL OTIMIZADA
 import * as React from 'react';
 import { useState, useEffect, useRef } from 'react';
 import {
@@ -59,8 +59,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { ScrollArea } from '@/components/ui/scroll-area';
 
-// Tipos
+// Tipos (mantidos iguais)
 interface ApiRole {
   id: string;
   name: string;
@@ -142,21 +143,16 @@ export function RolesManagement() {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      // Carregar roles
       const rolesResponse = await api.get('/roles/roles-permissions', {
         skipPermissionErrorModal: true
       });
-
       setRoles(rolesResponse.data);
-
     } catch (error: any) {
       console.error('Error loading roles:', error);
-
       if (error.response?.status === 403) {
         setHasPermissionError(true);
         setPermissionError(t('settings.noPermissionToViewRoles'));
         setRoles([]);
-
         toast.error(t('settings.noPermissionToViewRoles'), {
           description: t('errors.contactAdminForAccess')
         });
@@ -168,17 +164,13 @@ export function RolesManagement() {
     }
   };
 
-
   useEffect(() => {
     if (!showRoleDialog) {
-      // Reset quando o diálogo fecha
       setHasLoadedPermissions(false);
       setAllPermissions([]);
       setPermissionGroups([]);
       return;
     }
-
-    // Se já carregou, não carrega de novo
     if (hasLoadedPermissions) return;
 
     const loadPermissions = async () => {
@@ -195,7 +187,6 @@ export function RolesManagement() {
 
         setAllPermissions(response.data.permissions);
 
-        // Marcar permissões selecionadas
         if (response.data.rolePermissions) {
           setSelectedPermissions(new Set(response.data.rolePermissions));
         } else if (selectedRole?.permissions) {
@@ -204,9 +195,7 @@ export function RolesManagement() {
           ));
         }
 
-        // Agrupar permissões
         const groupsMap = new Map<string, Permission[]>();
-
         response.data.permissions.forEach((permission: Permission) => {
           const resource = permission.resource || 'General';
           if (!groupsMap.has(resource)) {
@@ -224,13 +213,8 @@ export function RolesManagement() {
           .sort((a, b) => a.resource.localeCompare(b.resource));
 
         setPermissionGroups(groups);
-
-        // Expandir todos os grupos
-        const resourceSet = new Set(groups.map(g => g.resource));
-        setExpandedGroups(resourceSet);
-
+        setExpandedGroups(new Set(groups.map(g => g.resource)));
         setHasLoadedPermissions(true);
-
       } catch (error) {
         console.error('Error loading permissions:', error);
         toast.error(t('common.errorLoadingData'));
@@ -240,30 +224,27 @@ export function RolesManagement() {
     };
 
     loadPermissions();
-  }, [showRoleDialog, selectedRole, hasLoadedPermissions, t]); // Adicionado hasLoadedPermissions
-
+  }, [showRoleDialog, selectedRole, hasLoadedPermissions, t]);
 
   const filteredRoles = roles.filter(role => {
     const matchesSearch =
       role.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       role.description?.toLowerCase().includes(searchTerm.toLowerCase()) || false;
-
     const matchesFilter = showInactiveRoles || role.isActive;
-
     return matchesSearch && matchesFilter;
   });
 
   const handleEditRole = (role: ApiRole) => {
     setSelectedRole(role);
     setShowRoleDialog(true);
-    setHasLoadedPermissions(false); // Forçar recarregar
+    setHasLoadedPermissions(false);
   };
 
   const handleCreateRole = () => {
     setSelectedRole(null);
     setSelectedPermissions(new Set());
     setShowRoleDialog(true);
-    setHasLoadedPermissions(false); // Forçar recarregar
+    setHasLoadedPermissions(false);
   };
 
   const handleDeleteRole = async (roleId: string) => {
@@ -273,7 +254,6 @@ export function RolesManagement() {
 
   const confirmDeleteRole = async () => {
     if (!confirmAction.role) return;
-
     try {
       await api.delete(`/roles/${confirmAction.role.id}`);
       toast.success(t('settings.roleDeleted'));
@@ -311,9 +291,7 @@ export function RolesManagement() {
 
   const performToggleActive = async (role: ApiRole) => {
     try {
-      await api.patch(`/roles/${role.id}`, {
-        isActive: !role.isActive
-      });
+      await api.patch(`/roles/${role.id}`, { isActive: !role.isActive });
       toast.success(t('settings.roleUpdated'));
       await loadData();
     } catch (error) {
@@ -334,7 +312,6 @@ export function RolesManagement() {
   const handleSelectAllInGroup = (group: PermissionGroup) => {
     const newSelected = new Set(selectedPermissions);
     const allSelected = group.permissions.every(p => newSelected.has(p.id));
-
     group.permissions.forEach(permission => {
       if (allSelected) {
         newSelected.delete(permission.id);
@@ -342,7 +319,6 @@ export function RolesManagement() {
         newSelected.add(permission.id);
       }
     });
-
     setSelectedPermissions(newSelected);
   };
 
@@ -383,7 +359,6 @@ export function RolesManagement() {
       setShowRoleDialog(false);
       setSelectedRole(null);
       await loadData();
-
     } catch (error) {
       console.error('Error saving role:', error);
       toast.error(t('common.errorSaving'));
@@ -443,12 +418,7 @@ export function RolesManagement() {
               {t('settings.rolesManagementDescription')}
             </p>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-2"
-            onClick={loadData}
-          >
+          <Button variant="outline" size="sm" className="gap-2" onClick={loadData}>
             <RefreshCw className="h-4 w-4" />
             {t('common.refresh')}
           </Button>
@@ -476,21 +446,13 @@ export function RolesManagement() {
                 </Alert>
 
                 <div className="flex gap-3">
-                  <Button
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => window.location.href = '/settings'}
-                  >
+                  <Button variant="outline" className="flex-1" onClick={() => window.location.href = '/settings'}>
                     {t('common.goBack')}
                   </Button>
-                  <Button
-                    variant="default"
-                    className="flex-1 gap-2"
-                    onClick={() => {
-                      const subject = encodeURIComponent('Role Management Access Request');
-                      window.open(`mailto:admin@company.com?subject=${subject}`, '_blank');
-                    }}
-                  >
+                  <Button variant="default" className="flex-1 gap-2" onClick={() => {
+                    const subject = encodeURIComponent('Role Management Access Request');
+                    window.open(`mailto:admin@company.com?subject=${subject}`, '_blank');
+                  }}>
                     <AlertCircle className="h-4 w-4" />
                     {t('permission.requestAccess')}
                   </Button>
@@ -504,55 +466,42 @@ export function RolesManagement() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">{t('settings.roles')}</h2>
-          <p className="text-muted-foreground">
+          <p className="text-sm sm:text-base text-muted-foreground">
             {t('settings.rolesManagementDescription')}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-2"
-            onClick={loadData}
-            disabled={isLoading}
-          >
+          <Button variant="outline" size="sm" className="gap-2 h-9 sm:h-10" onClick={loadData} disabled={isLoading}>
             <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-            {t('common.refresh')}
+            <span className="hidden sm:inline">{t('common.refresh')}</span>
           </Button>
-          <Button
-            size="sm"
-            className="gap-2"
-            onClick={handleCreateRole}  // ← TROQUE AQUI
-            disabled={isLoading}
-          >
+          <Button size="sm" className="gap-2 h-9 sm:h-10" onClick={handleCreateRole} disabled={isLoading}>
             <Plus className="h-4 w-4" />
-            {t('settings.createRole')}
+            <span className="hidden sm:inline">{t('settings.createRole')}</span>
           </Button>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {stats.map((stat, index) => (
           <Card key={index} className="border-border bg-card/50 backdrop-blur-sm hover:bg-card/70 transition-colors">
-            <CardContent className="p-5">
+            <CardContent className="p-4 sm:p-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">{t(stat.label)}</p>
-                  <div className="flex items-baseline gap-2 mt-1">
-                    <h3 className="text-2xl font-bold">{stat.value}</h3>
-                    <Badge variant="secondary" className="text-xs">
-                      {stat.change}
-                    </Badge>
+                  <p className="text-xs sm:text-sm text-muted-foreground">{t(stat.label)}</p>
+                  <div className="flex items-baseline gap-1 sm:gap-2 mt-1">
+                    <h3 className="text-xl sm:text-2xl font-bold">{stat.value}</h3>
+                    <Badge variant="secondary" className="text-xs">{stat.change}</Badge>
                   </div>
                 </div>
-                <div className={`h-10 w-10 ${stat.color.split(' ')[0]} rounded-lg flex items-center justify-center`}>
-                  <stat.icon className={`h-5 w-5 ${stat.color.split(' ')[1]}`} />
+                <div className={`h-8 w-8 sm:h-10 sm:w-10 ${stat.color.split(' ')[0]} rounded-lg flex items-center justify-center`}>
+                  <stat.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${stat.color.split(' ')[1]}`} />
                 </div>
               </div>
             </CardContent>
@@ -562,10 +511,10 @@ export function RolesManagement() {
 
       {/* Filters */}
       <Card className="border-border bg-card/50 backdrop-blur-sm">
-        <CardContent className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <CardContent className="p-4 sm:p-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="search" className="flex items-center gap-2">
+              <Label htmlFor="search" className="flex items-center gap-2 text-sm">
                 <Search className="h-4 w-4" />
                 {t('common.search')}
               </Label>
@@ -574,11 +523,12 @@ export function RolesManagement() {
                 placeholder={t('settings.searchRoles')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                className="h-9 sm:h-10"
               />
             </div>
 
             <div className="space-y-2">
-              <Label className="flex items-center gap-2">
+              <Label className="flex items-center gap-2 text-sm">
                 <Filter className="h-4 w-4" />
                 {t('settings.roleStatus')}
               </Label>
@@ -586,30 +536,30 @@ export function RolesManagement() {
                 <Button
                   variant={showInactiveRoles ? "outline" : "default"}
                   size="sm"
-                  className="flex-1"
+                  className="flex-1 h-9 sm:h-10 text-xs sm:text-sm"
                   onClick={() => setShowInactiveRoles(false)}
                 >
-                  <Eye className="h-4 w-4 mr-2" />
-                  {t('settings.activeOnly')}
+                  <Eye className="h-4 w-4 mr-1 sm:mr-2" />
+                  <span className="truncate">{t('settings.activeOnly')}</span>
                 </Button>
                 <Button
                   variant={showInactiveRoles ? "default" : "outline"}
                   size="sm"
-                  className="flex-1"
+                  className="flex-1 h-9 sm:h-10 text-xs sm:text-sm"
                   onClick={() => setShowInactiveRoles(true)}
                 >
-                  <EyeOff className="h-4 w-4 mr-2" />
-                  {t('settings.all')}
+                  <EyeOff className="h-4 w-4 mr-1 sm:mr-2" />
+                  <span className="truncate">{t('settings.all')}</span>
                 </Button>
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label>{t('common.actions')}</Label>
+              <Label className="text-sm">{t('common.actions')}</Label>
               <Button
                 variant="outline"
                 size="sm"
-                className="w-full gap-2"
+                className="w-full gap-2 h-9 sm:h-10"
                 onClick={loadData}
                 disabled={isLoading}
               >
@@ -623,186 +573,188 @@ export function RolesManagement() {
 
       {/* Roles Table */}
       <Card className="border-border bg-card/50 backdrop-blur-sm overflow-hidden">
-        <CardHeader className="border-b border-border">
-          <div className="flex items-center justify-between">
-            <CardTitle>{t('settings.rolesList')}</CardTitle>
-            <Badge variant="outline">
+        <CardHeader className="border-b border-border p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <CardTitle className="text-lg sm:text-xl">{t('settings.rolesList')}</CardTitle>
+            <Badge variant="outline" className="w-fit">
               {filteredRoles.length} {t('settings.roles')}
             </Badge>
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader className="bg-muted/30">
-              <TableRow>
-                <TableHead className="w-[250px]">{t('settings.role')}</TableHead>
-                <TableHead className="w-[300px]">{t('settings.description')}</TableHead>
-                <TableHead>{t('settings.permissions')}</TableHead>
-                <TableHead>{t('settings.users')}</TableHead>
-                <TableHead>{t('settings.status')}</TableHead>
-                <TableHead>{t('settings.lastUpdated')}</TableHead>
-                <TableHead className="text-right w-[100px]">{t('common.actions')}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader className="bg-muted/30">
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-12">
-                    <div className="flex items-center justify-center gap-2">
-                      <RefreshCw className="h-6 w-6 animate-spin" />
-                      <span>{t('common.loading')}</span>
-                    </div>
-                  </TableCell>
+                  <TableHead className="min-w-[200px]">{t('settings.role')}</TableHead>
+                  <TableHead className="min-w-[250px] hidden md:table-cell">{t('settings.description')}</TableHead>
+                  <TableHead className="min-w-[100px]">{t('settings.permissions')}</TableHead>
+                  <TableHead className="min-w-[80px]">{t('settings.users')}</TableHead>
+                  <TableHead className="min-w-[100px]">{t('settings.status')}</TableHead>
+                  <TableHead className="min-w-[120px] hidden lg:table-cell">{t('settings.lastUpdated')}</TableHead>
+                  <TableHead className="text-right min-w-[80px]">{t('common.actions')}</TableHead>
                 </TableRow>
-              ) : filteredRoles.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center py-12">
-                    <div className="space-y-3">
-                      <div className="h-12 w-12 mx-auto bg-muted rounded-full flex items-center justify-center">
-                        <Shield className="h-6 w-6 text-muted-foreground" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-muted-foreground">
-                          {t('settings.noRolesFound')}
-                        </p>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {t('settings.tryChangingFilters')}
-                        </p>
-                      </div>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredRoles.map((role) => (
-                  <TableRow key={role.id} className="hover:bg-muted/20 transition-colors group">
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 bg-primary/10 rounded-lg flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                          <Shield className="h-4 w-4 text-primary" />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="font-medium truncate">{role.name}</p>
-                          {role.isDefault && (
-                            <Badge className="bg-green-500/10 text-green-600 text-xs mt-1">
-                              <CheckCircle className="h-3 w-3 mr-1" />
-                              {t('settings.default')}
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {role.description || t('settings.noDescription')}
-                      </p>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Key className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">
-                          {role.permissions?.length || 0}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Users className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">
-                          {role.userCount || 0}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={role.isActive ? "default" : "secondary"} className={role.isActive ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"}>
-                        {role.isActive ? t('settings.active') : t('settings.inactive')}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        {new Date(role.updatedAt || role.createdAt).toLocaleDateString()}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {new Date(role.updatedAt || role.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex justify-end gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0"
-                          onClick={() => handleEditRole(role)}
-                          title={t('settings.editRole')}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0"
-                          onClick={() => handleDuplicateRole(role)}
-                          title={t('settings.duplicateRole')}
-                        >
-                          <Copy className="h-4 w-4" />
-                        </Button>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-48">
-                            <DropdownMenuItem
-                              onClick={() => handleToggleActive(role)}
-                              className="cursor-pointer gap-2"
-                            >
-                              {role.isActive ? (
-                                <>
-                                  <XCircle className="h-4 w-4" />
-                                  {t('settings.deactivate')}
-                                </>
-                              ) : (
-                                <>
-                                  <CheckCircle className="h-4 w-4" />
-                                  {t('settings.activate')}
-                                </>
-                              )}
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              onClick={() => handleDeleteRole(role.id)}
-                              className="cursor-pointer gap-2 text-red-600"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                              {t('settings.deleteRole')}
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-12">
+                      <div className="flex items-center justify-center gap-2">
+                        <RefreshCw className="h-6 w-6 animate-spin" />
+                        <span>{t('common.loading')}</span>
                       </div>
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ) : filteredRoles.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-12">
+                      <div className="space-y-3">
+                        <div className="h-12 w-12 mx-auto bg-muted rounded-full flex items-center justify-center">
+                          <Shield className="h-6 w-6 text-muted-foreground" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-muted-foreground">{t('settings.noRolesFound')}</p>
+                          <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t('settings.tryChangingFilters')}</p>
+                        </div>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredRoles.map((role) => (
+                    <TableRow key={role.id} className="hover:bg-muted/20 transition-colors">
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <div className="h-8 w-8 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <Shield className="h-4 w-4 text-primary" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-medium truncate text-sm sm:text-base">{role.name}</p>
+                            {role.isDefault && (
+                              <Badge className="bg-green-500/10 text-green-600 text-xs mt-1">
+                                <CheckCircle className="h-3 w-3 mr-1" />
+                                {t('settings.default')}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        <p className="text-sm text-muted-foreground line-clamp-2 max-w-[200px] lg:max-w-[300px]">
+                          {role.description || t('settings.noDescription')}
+                        </p>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Key className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                          <span className="font-medium text-sm">{role.permissions?.length || 0}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Users className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                          <span className="font-medium text-sm">{role.userCount || 0}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={role.isActive ? "default" : "secondary"}
+                          className={`text-xs px-2 py-0.5 ${role.isActive ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"}`}
+                        >
+                          {role.isActive ? t('settings.active') : t('settings.inactive')}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell">
+                        <div className="text-xs sm:text-sm">
+                          {new Date(role.updatedAt || role.createdAt).toLocaleDateString()}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0"
+                            onClick={() => handleEditRole(role)}
+                            title={t('settings.editRole')}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 hidden sm:inline-flex"
+                            onClick={() => handleDuplicateRole(role)}
+                            title={t('settings.duplicateRole')}
+                          >
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-44 sm:w-48">
+                              <DropdownMenuItem
+                                onClick={() => handleToggleActive(role)}
+                                className="cursor-pointer gap-2 text-xs sm:text-sm"
+                              >
+                                {role.isActive ? (
+                                  <>
+                                    <XCircle className="h-4 w-4" />
+                                    {t('settings.deactivate')}
+                                  </>
+                                ) : (
+                                  <>
+                                    <CheckCircle className="h-4 w-4" />
+                                    {t('settings.activate')}
+                                  </>
+                                )}
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onClick={() => handleDuplicateRole(role)}
+                                className="cursor-pointer gap-2 text-xs sm:text-sm sm:hidden"
+                              >
+                                <Copy className="h-4 w-4" />
+                                {t('settings.duplicateRole')}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleDeleteRole(role.id)}
+                                className="cursor-pointer gap-2 text-red-600 text-xs sm:text-sm"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                {t('settings.deleteRole')}
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
 
       {/* Role Dialog */}
       {showRoleDialog && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <Card className="w-full max-w-6xl bg-card border-border max-h-[90vh] overflow-hidden shadow-2xl">
-            <CardHeader className="border-b bg-gradient-to-r from-primary/5 to-transparent">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                    <Shield className="h-5 w-5 text-primary" />
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4 overflow-y-auto">
+          <Card className="w-full max-w-6xl bg-card border-border max-h-[90vh] overflow-hidden shadow-2xl mx-2 sm:mx-4">
+            {/* Header */}
+            <CardHeader className="border-b bg-gradient-to-r from-primary/5 to-transparent sticky top-0 z-10 bg-card p-3 sm:p-4 md:p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="h-8 w-8 sm:h-10 sm:w-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                   </div>
-                  <div>
-                    <CardTitle className="text-xl">
+                  <div className="min-w-0">
+                    <CardTitle className="text-base sm:text-lg md:text-xl truncate">
                       {selectedRole?.id ? t('settings.editRole') : t('settings.createRole')}
                     </CardTitle>
-                    <CardDescription>
+                    <CardDescription className="text-xs sm:text-sm truncate">
                       {selectedRole?.id ? t('settings.editRoleDescription') : t('settings.createRoleDescription')}
                     </CardDescription>
                   </div>
@@ -815,20 +767,22 @@ export function RolesManagement() {
                     setSelectedRole(null);
                     setSelectedPermissions(new Set());
                   }}
+                  className="h-8 w-8 p-0 self-end sm:self-center flex-shrink-0"
                 >
                   <X className="h-4 w-4" />
                 </Button>
               </div>
             </CardHeader>
 
-            <div className="overflow-y-auto max-h-[calc(90vh-180px)]">
-              <CardContent className="p-6">
-                {/* Informações Básicas - Layout Vertical */}
-                <div className="space-y-6">
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div className="lg:col-span-2 space-y-4">
+            {/* Content */}
+            <ScrollArea className="h-[calc(90vh-280px)] sm:h-[calc(90vh-240px)] md:h-[calc(90vh-220px)] lg:h-[calc(90vh-200px)]">
+              <CardContent className="p-3 sm:p-4 md:p-6">
+                <div className="space-y-4 sm:space-y-6">
+                  {/* Basic Info */}
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+                    <div className="lg:col-span-2 space-y-3 sm:space-y-4">
                       <div className="space-y-2">
-                        <Label htmlFor="role-name" className="text-sm font-medium">
+                        <Label htmlFor="role-name" className="text-xs sm:text-sm font-medium">
                           {t('settings.roleName')} <span className="text-destructive">*</span>
                         </Label>
                         <Input
@@ -836,25 +790,25 @@ export function RolesManagement() {
                           ref={nameInputRef}
                           placeholder={t('settings.roleNamePlaceholder')}
                           defaultValue={selectedRole?.name || ''}
-                          className="h-10"
+                          className="h-9 sm:h-10 text-sm"
                         />
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="role-description" className="text-sm font-medium">
+                        <Label htmlFor="role-description" className="text-xs sm:text-sm font-medium">
                           {t('settings.description')}
                         </Label>
                         <textarea
                           id="role-description"
                           ref={descriptionInputRef}
-                          className="w-full px-3 py-2 border border-input rounded-md bg-background text-sm min-h-[80px] resize-none"
+                          className="w-full px-3 py-2 border border-input rounded-md bg-background text-xs sm:text-sm min-h-[70px] sm:min-h-[80px] resize-none"
                           placeholder={t('settings.roleDescriptionPlaceholder')}
                           defaultValue={selectedRole?.description || ''}
                         />
                       </div>
 
                       <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                        <Label htmlFor="is-active" className="text-sm font-medium cursor-pointer">
+                        <Label htmlFor="is-active" className="text-xs sm:text-sm font-medium cursor-pointer">
                           {t('settings.active')}
                         </Label>
                         <Switch
@@ -865,18 +819,18 @@ export function RolesManagement() {
                       </div>
                     </div>
 
-                    <div className="space-y-4">
+                    <div className="space-y-3 sm:space-y-4">
                       <Card className="border-border">
-                        <CardHeader className="py-3">
-                          <CardTitle className="text-sm flex items-center justify-between">
+                        <CardHeader className="py-2 sm:py-3">
+                          <CardTitle className="text-xs sm:text-sm flex items-center justify-between">
                             <span>{t('settings.summary')}</span>
-                            <Badge variant="outline">
+                            <Badge variant="outline" className="text-xs">
                               {selectedPermissions.size} {t('settings.selected')}
                             </Badge>
                           </CardTitle>
                         </CardHeader>
-                        <CardContent className="py-3">
-                          <div className="space-y-2 text-sm">
+                        <CardContent className="py-2 sm:py-3">
+                          <div className="space-y-1 sm:space-y-2 text-xs sm:text-sm">
                             <div className="flex justify-between">
                               <span className="text-muted-foreground">{t('settings.totalPermissions')}:</span>
                               <span className="font-medium">{allPermissions.length}</span>
@@ -885,17 +839,11 @@ export function RolesManagement() {
                               <span className="text-muted-foreground">{t('settings.resourceGroups')}:</span>
                               <span className="font-medium">{permissionGroups.length}</span>
                             </div>
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">{t('settings.roleStatus')}:</span>
-                              <Badge variant={selectedRole?.isActive ?? true ? "default" : "secondary"}>
-                                {selectedRole?.isActive ?? true ? t('settings.active') : t('settings.inactive')}
-                              </Badge>
-                            </div>
                           </div>
                         </CardContent>
                       </Card>
 
-                      <Alert className="bg-blue-50 border-blue-200">
+                      <Alert className="bg-blue-50 border-blue-200 p-3">
                         <AlertCircle className="h-4 w-4 text-blue-600" />
                         <AlertDescription className="text-xs text-blue-700">
                           {t('settings.permissionSelectionHint')}
@@ -906,82 +854,53 @@ export function RolesManagement() {
 
                   <Separator />
 
-                  {/* Permissões - Layout Expandido COM GRUPOS DESTACADOS */}
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
+                  {/* Permissions */}
+                  <div className="space-y-3 sm:space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div>
-                        <h3 className="text-lg font-semibold">{t('settings.permissions')}</h3>
-                        <p className="text-sm text-muted-foreground">
+                        <h3 className="text-base sm:text-lg font-semibold">{t('settings.permissions')}</h3>
+                        <p className="text-xs sm:text-sm text-muted-foreground">
                           {t('settings.selectPermissionsForRole')}
                         </p>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            const allIds = allPermissions.map(p => p.id);
-                            setSelectedPermissions(new Set(allIds));
-                            toast.success(t('settings.allPermissionsSelected'));
-                          }}
-                        >
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => {
+                          const allIds = allPermissions.map(p => p.id);
+                          setSelectedPermissions(new Set(allIds));
+                          toast.success(t('settings.allPermissionsSelected'));
+                        }}>
                           {t('settings.selectAll')}
                         </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedPermissions(new Set());
-                            toast.info(t('settings.allPermissionsDeselected'));
-                          }}
-                        >
+                        <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => {
+                          setSelectedPermissions(new Set());
+                          toast.info(t('settings.allPermissionsDeselected'));
+                        }}>
                           {t('settings.deselectAll')}
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            const newExpanded = new Set(expandedGroups);
-                            if (newExpanded.size === permissionGroups.length) {
-                              setExpandedGroups(new Set());
-                              toast.info(t('settings.allGroupsCollapsed'));
-                            } else {
-                              setExpandedGroups(new Set(permissionGroups.map(g => g.resource)));
-                              toast.success(t('settings.allGroupsExpanded'));
-                            }
-                          }}
-                          title={t('settings.toggleAllGroups')}
-                        >
-                          {expandedGroups.size === permissionGroups.length ? (
-                            <ChevronDown className="h-4 w-4" />
-                          ) : (
-                            <ChevronRight className="h-4 w-4" />
-                          )}
                         </Button>
                       </div>
                     </div>
 
                     {isLoadingPermissions ? (
-                      <div className="flex items-center justify-center py-12">
+                      <div className="flex items-center justify-center py-8 sm:py-12">
                         <div className="flex items-center gap-2">
-                          <RefreshCw className="h-6 w-6 animate-spin" />
-                          <span>{t('settings.loadingPermissions')}</span>
+                          <RefreshCw className="h-5 w-5 sm:h-6 sm:w-6 animate-spin" />
+                          <span className="text-sm">{t('settings.loadingPermissions')}</span>
                         </div>
                       </div>
                     ) : permissionGroups.length === 0 ? (
-                      <div className="border rounded-lg p-8 text-center">
-                        <div className="h-12 w-12 mx-auto bg-muted rounded-full flex items-center justify-center mb-3">
-                          <Key className="h-6 w-6 text-muted-foreground" />
+                      <div className="border rounded-lg p-6 sm:p-8 text-center">
+                        <div className="h-10 w-10 sm:h-12 sm:w-12 mx-auto bg-muted rounded-full flex items-center justify-center mb-3">
+                          <Key className="h-5 w-5 sm:h-6 sm:w-6 text-muted-foreground" />
                         </div>
-                        <p className="text-muted-foreground font-medium">
+                        <p className="text-muted-foreground font-medium text-sm sm:text-base">
                           {t('settings.noPermissionsAvailable')}
                         </p>
-                        <p className="text-sm text-muted-foreground mt-1">
+                        <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                           {t('settings.contactAdminForPermissions')}
                         </p>
                       </div>
                     ) : (
-                      <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+                      <div className="space-y-3 sm:space-y-4">
                         {permissionGroups.map((group) => {
                           const selectedInGroup = group.permissions.filter(p => selectedPermissions.has(p.id)).length;
                           const isAllSelected = selectedInGroup === group.permissions.length;
@@ -989,286 +908,118 @@ export function RolesManagement() {
                           const isExpanded = expandedGroups.has(group.resource);
 
                           return (
-                            <div
-                              key={group.resource}
-                              className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
-                            >
-                              {/* HEADER DO GRUPO - MUITO MAIS DESTACADO */}
-                              <div className={`
-                          px-4 py-3 border-b transition-colors
-                          ${isExpanded
-                                  ? 'bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20'
-                                  : 'bg-gradient-to-r from-muted/30 to-muted/10 border-border'
-                                }
-                        `}>
-                                <div className="flex items-center justify-between">
+                            <div key={group.resource} className="border rounded-lg overflow-hidden">
+                              {/* Group Header */}
+                              <div className={`px-3 sm:px-4 py-2 sm:py-3 border-b transition-colors ${isExpanded ? 'bg-gradient-to-r from-primary/5 to-primary/0' : 'bg-muted/5'
+                                }`}>
+                                <div className="flex items-center justify-between gap-2">
                                   <button
                                     onClick={() => handleToggleGroup(group.resource)}
-                                    className="flex items-center gap-3 flex-1 group hover:opacity-90 transition-opacity text-left"
+                                    className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 text-left"
                                   >
-                                    <div className={`
-                                h-8 w-8 rounded-lg flex items-center justify-center transition-colors
-                                ${isExpanded
-                                        ? 'bg-primary/20 text-primary'
-                                        : 'bg-muted text-muted-foreground'
-                                      }
-                              `}>
+                                    <div className="h-6 w-6 sm:h-8 sm:w-8 rounded-lg flex items-center justify-center flex-shrink-0">
                                       {isExpanded ? (
-                                        <ChevronDown className="h-4 w-4" />
+                                        <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4" />
                                       ) : (
-                                        <ChevronRight className="h-4 w-4" />
+                                        <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
                                       )}
                                     </div>
-
                                     <div className="flex-1 min-w-0">
-                                      <div className="flex items-center gap-2 mb-1">
-                                        <span className="font-semibold text-base capitalize truncate">
+                                      <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+                                        <span className="font-semibold text-xs sm:text-sm md:text-base capitalize truncate">
                                           {group.resource}
                                         </span>
-
-                                        {/* Status do grupo */}
-                                        {isAllSelected ? (
-                                          <Badge className="bg-green-500/20 text-green-700 border-green-300">
-                                            <Check className="h-3 w-3 mr-1" />
+                                        <Badge variant="outline" className="text-[10px] sm:text-xs px-1 py-0">
+                                          {group.permissions.length}
+                                        </Badge>
+                                        {isAllSelected && (
+                                          <Badge className="bg-green-500/10 text-green-600 text-[10px] sm:text-xs border-green-200">
+                                            <Check className="h-2 w-2 mr-1" />
                                             {t('settings.allSelected')}
                                           </Badge>
-                                        ) : isPartialSelected ? (
-                                          <Badge className="bg-yellow-500/20 text-yellow-700 border-yellow-300">
-                                            <AlertCircle className="h-3 w-3 mr-1" />
-                                            {t('settings.partial')}
-                                          </Badge>
-                                        ) : (
-                                          <Badge variant="outline" className="text-muted-foreground">
-                                            {t('settings.noneSelected')}
-                                          </Badge>
                                         )}
-
-                                        {group.category && (
-                                          <Badge
-                                            variant="outline"
-                                            className={`
-                                        ${getCategoryColor(group.category)} 
-                                        border-current/20
-                                      `}
-                                          >
-                                            {group.category}
-                                          </Badge>
-                                        )}
-                                      </div>
-
-                                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                                        <span className="flex items-center gap-1">
-                                          <Key className="h-3 w-3" />
-                                          {group.permissions.length} {t('settings.permissions')}
-                                        </span>
-                                        <span className="h-3 w-px bg-border" />
-                                        <span className="font-medium text-primary">
-                                          {selectedInGroup} {t('settings.selected')}
-                                        </span>
-                                        <span className="h-3 w-px bg-border" />
-                                        <span className="flex items-center gap-1">
-                                          <Shield className="h-3 w-3" />
-                                          {Math.round((selectedInGroup / group.permissions.length) * 100)}%
-                                        </span>
                                       </div>
                                     </div>
                                   </button>
-
-                                  <div className="flex items-center gap-2 ml-4">
-                                    <Button
-                                      type="button"
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleSelectAllInGroup(group);
-                                      }}
-                                      className={`
-                                  text-xs h-7 px-2 transition-all
-                                  ${isAllSelected
-                                          ? 'bg-red-500/10 text-red-600 hover:bg-red-500/20 hover:text-red-700'
-                                          : 'bg-green-500/10 text-green-600 hover:bg-green-500/20 hover:text-green-700'
-                                        }
-                                `}
-                                    >
-                                      {isAllSelected ? (
-                                        <>
-                                          <X className="h-3 w-3 mr-1" />
-                                          {t('settings.deselectAll')}
-                                        </>
-                                      ) : (
-                                        <>
-                                          <Check className="h-3 w-3 mr-1" />
-                                          {t('settings.selectAll')}
-                                        </>
-                                      )}
-                                    </Button>
-                                  </div>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleSelectAllInGroup(group);
+                                    }}
+                                    className="text-[10px] sm:text-xs h-6 sm:h-7 px-2 flex-shrink-0"
+                                  >
+                                    {isAllSelected ? t('settings.deselectAll') : t('settings.selectAll')}
+                                  </Button>
                                 </div>
                               </div>
 
-                              {/* LISTA DE PERMISSÕES - ESTILO MELHORADO */}
+                              {/* Permissions List */}
                               {isExpanded && (
-                                <div className="bg-gradient-to-b from-background to-muted/5">
-                                  <div className="p-4">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                                      {group.permissions.map((permission) => {
-                                        const isSelected = selectedPermissions.has(permission.id);
-
-                                        return (
-                                          <div
-                                            key={permission.id}
-                                            className={`
-                                        flex items-start justify-between p-3 rounded-lg border transition-all
-                                        cursor-pointer group/permission hover:scale-[1.02] transform-gpu
-                                        ${isSelected
-                                                ? 'border-primary bg-gradient-to-r from-primary/5 to-primary/10 shadow-sm'
-                                                : 'border-border hover:bg-muted/30 hover:border-primary/30'
-                                              }
-                                      `}
-                                            onClick={() => handleTogglePermission(permission.id)}
-                                          >
-                                            <div className="flex-1 min-w-0">
-                                              <div className="flex items-start gap-2">
-                                                <div className={`
-                                            h-6 w-6 rounded-md flex items-center justify-center flex-shrink-0 mt-0.5
-                                            ${isSelected
-                                                    ? 'bg-primary text-primary-foreground'
-                                                    : 'bg-muted text-muted-foreground group-hover/permission:bg-primary/20'
-                                                  }
-                                          `}>
-                                                  {isSelected ? (
-                                                    <Check className="h-3 w-3" />
-                                                  ) : (
-                                                    <Key className="h-3 w-3" />
-                                                  )}
+                                <div className="p-2 sm:p-3">
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                                    {group.permissions.map((permission) => {
+                                      const isSelected = selectedPermissions.has(permission.id);
+                                      return (
+                                        <div
+                                          key={permission.id}
+                                          className={`flex items-start justify-between p-2 rounded-lg border transition-all cursor-pointer ${isSelected ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted/30'
+                                            }`}
+                                          onClick={() => handleTogglePermission(permission.id)}
+                                        >
+                                          <div className="flex-1 min-w-0">
+                                            <div className="flex items-start gap-2">
+                                              <div className={`h-5 w-5 rounded-md flex items-center justify-center flex-shrink-0 mt-0.5 ${isSelected ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'
+                                                }`}>
+                                                {isSelected ? <Check className="h-3 w-3" /> : <Key className="h-3 w-3" />}
+                                              </div>
+                                              <div className="flex-1 min-w-0">
+                                                <div className="font-medium text-xs truncate">
+                                                  {permission.name}
                                                 </div>
-                                                <div className="flex-1 min-w-0">
-                                                  <div className="flex items-center gap-2 mb-1">
-                                                    <div className="font-medium text-sm truncate">
-                                                      {permission.name}
-                                                    </div>
-                                                    {!permission.isActive && (
-                                                      <Badge variant="outline" className="text-xs">
-                                                        {t('settings.inactive')}
-                                                      </Badge>
-                                                    )}
-                                                  </div>
-                                                  <div className="text-xs text-muted-foreground font-mono truncate mb-1">
-                                                    {permission.key}
-                                                  </div>
-                                                  {permission.description && (
-                                                    <div className="text-xs text-muted-foreground line-clamp-2">
-                                                      {permission.description}
-                                                    </div>
-                                                  )}
+                                                <div className="text-[10px] text-muted-foreground font-mono truncate">
+                                                  {permission.key}
                                                 </div>
                                               </div>
                                             </div>
-                                            <div className="ml-3 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
-                                              <Switch
-                                                checked={isSelected}
-                                                onCheckedChange={() => handleTogglePermission(permission.id)}
-                                                className={`
-                                            ${isSelected
-                                                    ? 'bg-primary'
-                                                    : 'bg-muted'
-                                                  }
-                                          `}
-                                              />
-                                            </div>
                                           </div>
-                                        );
-                                      })}
-                                    </div>
-
-                                    {/* Resumo do Grupo */}
-                                    <div className="mt-4 pt-4 border-t border-border/50">
-                                      <div className="flex items-center justify-between text-sm">
-                                        <div className="flex items-center gap-3">
-                                          <div className="flex items-center gap-2">
-                                            <div className="h-3 w-3 rounded-full bg-green-500" />
-                                            <span className="text-muted-foreground">
-                                              {selectedInGroup} {t('settings.selected')}
-                                            </span>
-                                          </div>
-                                          <div className="flex items-center gap-2">
-                                            <div className="h-3 w-3 rounded-full bg-gray-300" />
-                                            <span className="text-muted-foreground">
-                                              {group.permissions.length - selectedInGroup} {t('settings.available')}
-                                            </span>
+                                          <div className="ml-2 flex-shrink-0">
+                                            <Switch
+                                              checked={isSelected}
+                                              onCheckedChange={() => handleTogglePermission(permission.id)}
+                                              className="scale-75 sm:scale-90"
+                                            />
                                           </div>
                                         </div>
-                                        <div className="text-right">
-                                          <span className="font-medium">
-                                            {Math.round((selectedInGroup / group.permissions.length) * 100)}% {t('settings.complete')}
-                                          </span>
-                                        </div>
-                                      </div>
-                                    </div>
+                                      );
+                                    })}
                                   </div>
                                 </div>
                               )}
                             </div>
                           );
                         })}
-
-                        {/* Resumo Geral */}
-                        <div className="sticky bottom-0 bg-background/95 backdrop-blur-sm border rounded-lg p-4 mt-4">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                              <div className="flex items-center gap-2">
-                                <Shield className="h-5 w-5 text-primary" />
-                                <span className="font-medium">
-                                  {selectedPermissions.size} {t('settings.permissionsSelected')}
-                                </span>
-                              </div>
-                              <div className="h-4 w-px bg-border" />
-                              <div className="flex items-center gap-2">
-                                <CheckCircle className="h-5 w-5 text-green-500" />
-                                <span className="text-sm text-muted-foreground">
-                                  {permissionGroups.filter(g =>
-                                    g.permissions.every(p => selectedPermissions.has(p.id))
-                                  ).length} {t('settings.completeGroups')}
-                                </span>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <div className="text-2xl font-bold text-primary">
-                                {Math.round((selectedPermissions.size / allPermissions.length) * 100)}%
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                {t('settings.ofTotalPermissions')}
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Barra de Progresso */}
-                          <div className="mt-3">
-                            <div className="h-2 bg-muted rounded-full overflow-hidden">
-                              <div
-                                className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full transition-all duration-300"
-                                style={{ width: `${(selectedPermissions.size / allPermissions.length) * 100}%` }}
-                              />
-                            </div>
-                          </div>
-                        </div>
                       </div>
                     )}
                   </div>
                 </div>
               </CardContent>
-            </div>
+            </ScrollArea>
 
-            <div className="border-t bg-muted/20 p-6">
-              <div className="flex justify-between items-center">
-                <div className="text-sm text-muted-foreground flex items-center gap-2">
-                  <Key className="h-4 w-4" />
-                  <span>
-                    {selectedPermissions.size} {t('settings.permissionsSelected')} • {permissionGroups.length} {t('settings.groups')}
+            {/* Footer */}
+            <div className="border-t bg-muted/20 p-3 sm:p-4 md:p-6">
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
+                {/* Info de permissões */}
+                <div className="text-xs sm:text-sm text-muted-foreground flex items-center gap-2 w-full sm:w-auto justify-center sm:justify-start">
+                  <Key className="h-4 w-4 hidden sm:block flex-shrink-0" />
+                  <span className="text-center sm:text-left">
+                    {selectedPermissions.size} {t('settings.selected')} • {permissionGroups.length} {t('settings.groups')}
                   </span>
                 </div>
-                <div className="flex gap-3">
+
+                {/* BOTÕES - CORRIGIDO PARA OCUPAR 100% NO MOBILE */}
+                <div className="flex flex-col-reverse sm:flex-row gap-2 w-full sm:w-auto">
                   <Button
                     variant="outline"
                     onClick={() => {
@@ -1276,20 +1027,21 @@ export function RolesManagement() {
                       setSelectedRole(null);
                       setSelectedPermissions(new Set());
                     }}
+                    className="w-full sm:w-auto min-w-[100px] px-4 h-10 sm:h-10 text-sm"
                   >
                     {t('common.cancel')}
                   </Button>
                   <Button
                     onClick={handleSaveRole}
                     disabled={isSaving}
-                    className="gap-2"
+                    className="w-full sm:w-auto min-w-[120px] px-4 h-10 sm:h-10 text-sm gap-2"
                   >
                     {isSaving ? (
-                      <RefreshCw className="h-4 w-4 animate-spin" />
+                      <RefreshCw className="h-4 w-4 animate-spin flex-shrink-0" />
                     ) : (
-                      <Save className="h-4 w-4" />
+                      <Save className="h-4 w-4 flex-shrink-0" />
                     )}
-                    {t('common.save')}
+                    <span>{t('common.save')}</span>
                   </Button>
                 </div>
               </div>
@@ -1300,14 +1052,14 @@ export function RolesManagement() {
 
       {/* Confirmation Dialog */}
       <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md w-[95vw] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 bg-destructive/10 rounded-full flex items-center justify-center">
+              <div className="h-10 w-10 bg-destructive/10 rounded-full flex items-center justify-center flex-shrink-0">
                 <AlertCircle className="h-5 w-5 text-destructive" />
               </div>
-              <div>
-                <DialogTitle>
+              <div className="min-w-0">
+                <DialogTitle className="text-base sm:text-lg truncate">
                   {confirmAction.type === 'delete'
                     ? t('settings.confirmDeleteRole')
                     : confirmAction.type === 'deactivate'
@@ -1315,7 +1067,7 @@ export function RolesManagement() {
                       : t('settings.confirmActivateRole')
                   }
                 </DialogTitle>
-                <DialogDescription>
+                <DialogDescription className="text-xs sm:text-sm">
                   {confirmAction.type === 'delete'
                     ? t('settings.deleteRoleWarning')
                     : confirmAction.type === 'deactivate'
@@ -1327,32 +1079,32 @@ export function RolesManagement() {
             </div>
           </DialogHeader>
 
-          <div className="py-4">
-            {confirmAction.role && (
-              <div className="bg-muted/30 p-4 rounded-lg">
+          {confirmAction.role && (
+            <div className="py-4">
+              <div className="bg-muted/30 p-3 sm:p-4 rounded-lg">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                    <Shield className="h-5 w-5 text-primary" />
+                  <div className="h-8 w-8 sm:h-10 sm:w-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                   </div>
-                  <div>
-                    <p className="font-medium">{confirmAction.role.name}</p>
-                    <p className="text-sm text-muted-foreground">
+                  <div className="min-w-0">
+                    <p className="font-medium text-sm sm:text-base truncate">{confirmAction.role.name}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                       {confirmAction.role.userCount || 0} {t('settings.usersAffected')}
                     </p>
                   </div>
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
-          <DialogFooter className="gap-2">
+          <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2">
             <Button
               variant="outline"
               onClick={() => {
                 setShowConfirmDialog(false);
                 setConfirmAction({ type: 'activate', role: null });
               }}
-              className="flex-1"
+              className="w-full sm:w-auto min-w-[100px]"
             >
               {t('common.cancel')}
             </Button>
@@ -1361,23 +1113,25 @@ export function RolesManagement() {
               onClick={() => {
                 if (confirmAction.type === 'delete') {
                   confirmDeleteRole();
-                } else if (confirmAction.type === 'deactivate' || confirmAction.type === 'activate') {
+                } else {
                   performToggleActive(confirmAction.role!);
                   setShowConfirmDialog(false);
                   setConfirmAction({ type: 'activate', role: null });
                 }
               }}
-              className="flex-1 gap-2"
+              className="w-full sm:w-auto min-w-[120px] gap-2"
             >
               {confirmAction.type === 'delete' && <Trash2 className="h-4 w-4" />}
               {confirmAction.type === 'deactivate' && <XCircle className="h-4 w-4" />}
               {confirmAction.type === 'activate' && <CheckCircle className="h-4 w-4" />}
-              {confirmAction.type === 'delete'
-                ? t('settings.deleteRole')
-                : confirmAction.type === 'deactivate'
-                  ? t('settings.deactivate')
-                  : t('settings.activate')
-              }
+              <span className="truncate">
+                {confirmAction.type === 'delete'
+                  ? t('settings.deleteRole')
+                  : confirmAction.type === 'deactivate'
+                    ? t('settings.deactivate')
+                    : t('settings.activate')
+                }
+              </span>
             </Button>
           </DialogFooter>
         </DialogContent>

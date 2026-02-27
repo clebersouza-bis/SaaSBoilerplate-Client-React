@@ -45,7 +45,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { useTranslation } from '@/hooks/useTranslation';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 import api from '@/lib/api/client';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
@@ -79,6 +79,14 @@ interface ApiUser {
       description?: string;
     };
   }>;
+  userInviteDto?: {
+    invitedBy: string;
+    userId: string;
+    tenantId: string;
+    accept: boolean;
+    acceptedAt: string;
+    expiresAt: string;
+  } | null;
 }
 
 interface ApiRole {
@@ -107,7 +115,8 @@ export function UsersManagement() {
   const [selectedUser, setSelectedUser] = useState<ApiUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-
+  const { toast } = useToast();
+  const [resendLoading, setResendLoading] = useState<string | null>(null);
   // Estados para dados da API
   const [users, setUsers] = useState<ApiUser[]>([]);
   const [roles, setRoles] = useState<ApiRole[]>([]);
@@ -138,8 +147,12 @@ export function UsersManagement() {
       setRoles(activeRoles);
 
     } catch (error) {
-      console.error('Error loading data:', error);
-      toast.error(t('common.errorLoadingData'));
+      toast({
+        title: t('common.errorLoadingData'),
+        variant: 'destructive',
+        duration: 3000,
+
+      });
     } finally {
       setIsLoading(false);
     }
@@ -156,7 +169,7 @@ export function UsersManagement() {
         selectedUser.userRoles?.map((ur: any) => ur.role.id) || []
       );
       setSelectedRoles(userRoles);
-      
+
       // Preenche o formData com os dados do usuário
       setFormData({
         firstName: selectedUser.firstName || '',
@@ -203,6 +216,37 @@ export function UsersManagement() {
     return matchesSearch && matchesRole && matchesStatus;
   });
 
+  // Adicione a função para reenviar convite
+  const handleResendInvite = async (userId: string, email: string) => {
+    setResendLoading(userId);
+    try {
+      await api.post(`/users/resend-invite`, { userId });
+      toast({
+        title: t('settings.inviteResent'),
+        description: t('settings.inviteResentDescription', { email }),
+        duration: 3000,
+        className: "bg-yellow-50 border-yellow-200 text-yellow-800",
+
+
+      });
+    } catch (error) {
+      console.error('Error resending invite:', error);
+      toast({
+        title: t('common.errorSendingInvite'),
+        variant: 'destructive',
+        duration: 3000,
+
+      });
+    } finally {
+      setResendLoading(null);
+    }
+  };
+
+  // Função auxiliar para verificar se tem convite pendente
+  const hasPendingInvite = (user: ApiUser) => {
+    return user.userInviteDto !== null && !user.userInviteDto?.accept;
+  };
+
   const handleEditUser = (user: ApiUser) => {
     setSelectedUser(user);
     setShowUserDialog(true);
@@ -213,11 +257,19 @@ export function UsersManagement() {
 
     try {
       await api.delete(`/users/${userId}`);
-      toast.success(t('settings.userDeleted'));
+      toast({
+        title: t('settings.userDeleted'),
+        description: t('settings.userDeletedDescription', { email: formData.email }),
+        duration: 3000,
+      });
       await loadData();
     } catch (error) {
       console.error('Error deleting user:', error);
-      toast.error(t('common.errorDeleting'));
+      toast({
+        title: t('settings.errorDeletingUser'),
+        description: t('settings.errorDeletingUserDescription', { email: formData.email }),
+        duration: 3000,
+      });
     }
   };
 
@@ -226,11 +278,21 @@ export function UsersManagement() {
       await api.patch(`/users/${user.id}`, {
         active: !user.active
       });
-      toast.success(t('settings.userUpdated'));
+      toast({
+        title: user.active ? t('settings.userDeactivated') : t('settings.userActivated'),
+        description: t('settings.userStatusChangedDescription', { email: user.email }),
+        duration: 3000,
+
+      })
       await loadData();
     } catch (error) {
-      console.error('Error updating user:', error);
-      toast.error(t('common.errorUpdating'));
+      toast({
+        title: t('settings.errorUpdatingUser'),
+        description: t('settings.errorUpdatingUserDescription', { email: user.email }),
+        variant: 'destructive',
+        duration: 3000,
+
+      });
     }
   };
 
@@ -245,14 +307,21 @@ export function UsersManagement() {
   };
 
   const handleSaveUser = async () => {
-    // Validações básicas
     if (!formData.firstName?.trim() || !formData.lastName?.trim()) {
-      toast.error(t('settings.nameRequired'));
+      toast({
+        title: t('settings.nameRequired'),
+        duration: 3000,
+
+      })
       return;
     }
 
     if (!formData.email?.trim()) {
-      toast.error(t('settings.emailRequired'));
+      toast({
+        title: t('settings.emailRequired'),
+        duration: 3000,
+
+      })
       return;
     }
 
@@ -270,11 +339,29 @@ export function UsersManagement() {
 
       if (selectedUser?.id) {
         await api.put(`/users/${selectedUser.id}`, userData);
-        toast.success(t('settings.userUpdated'));
+        toast({
+          title: t('settings.userUpdated'),
+          description: t('settings.userUpdatedDescription', { email: formData.email }),
+          duration: 3000,
+          className: "bg-blue-50 border-blue-200 text-blue-800",
+
+        });
       } else {
         await api.post('/users', userData);
-        toast.success(t('settings.userCreated'));
+        toast({
+          title: t('settings.userCreated'),
+          description: t('settings.userCreatedDescription', { email: formData.email }),
+          duration: 5000,
+          className: "bg-blue-50 border-blue-200 text-blue-800",
+
+        });
       }
+      setTimeout(() => {
+        setShowUserDialog(false);
+        setSelectedUser(null);
+        setSelectedRoles(new Set());
+        loadData();
+      }, 500);
 
       setShowUserDialog(false);
       setSelectedUser(null);
@@ -284,7 +371,12 @@ export function UsersManagement() {
     } catch (error: any) {
       console.error('Error saving user:', error);
       const errorMsg = error.response?.data?.errors?.[0] || error.response?.data?.message;
-      toast.error(errorMsg || t('common.errorSaving'));
+      toast({
+        title: errorMsg || t('common.errorSaving'),
+        variant: 'destructive',
+        duration: 3000,
+
+      });
     } finally {
       setIsSaving(false);
     }
@@ -509,17 +601,25 @@ export function UsersManagement() {
                           </div>
                           <div className="min-w-0">
                             <p className="font-medium truncate text-sm sm:text-base">{user.firstName} {user.lastName}</p>
-                            <div className="flex items-center gap-1 mt-1">
+                            <div className="flex items-center gap-1 mt-1 flex-wrap">
                               {user.emailConfirmed ? (
                                 <Badge className="bg-green-500/10 text-green-600 text-xs px-1.5 py-0.5">
                                   <Check className="h-2.5 w-2.5 mr-1" />
                                   Email
                                 </Badge>
                               ) : (
-                                <Badge className="bg-yellow-500/10 text-yellow-600 text-xs px-1.5 py-0.5">
-                                  <X className="h-2.5 w-2.5 mr-1" />
-                                  Email
-                                </Badge>
+                                <>
+                                  <Badge className="bg-yellow-500/10 text-yellow-600 text-xs px-1.5 py-0.5">
+                                    <X className="h-2.5 w-2.5 mr-1" />
+                                    Email
+                                  </Badge>
+                                  {hasPendingInvite(user) && (
+                                    <Badge className="bg-blue-500/10 text-blue-600 text-xs px-1.5 py-0.5 border-blue-200">
+                                      <Mail className="h-2.5 w-2.5 mr-1" />
+                                      {t('settings.invitePending')}
+                                    </Badge>
+                                  )}
+                                </>
                               )}
                             </div>
                           </div>
@@ -607,7 +707,33 @@ export function UsersManagement() {
                                 <MoreVertical className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-40 sm:w-48">
+                            <DropdownMenuContent align="end" className="w-48 sm:w-56">
+                              {hasPendingInvite(user) && (
+                                <>
+                                  <DropdownMenuItem
+                                    onClick={() => handleResendInvite(user.id, user.email)}
+                                    disabled={resendLoading === user.id}
+                                    className={`cursor-pointer gap-2 text-xs sm:text-sm ${resendLoading === user.id
+                                      ? 'opacity-50 cursor-not-allowed'
+                                      : 'text-blue-600 hover:text-blue-700'
+                                      }`}
+                                  >
+                                    {resendLoading === user.id ? (
+                                      <>
+                                        <RefreshCw className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" />
+                                        <span>{t('common.sending')}</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                                        <span>{t('settings.resendInvite')}</span>
+                                      </>
+                                    )}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                </>
+                              )}
+
                               <DropdownMenuItem
                                 onClick={() => handleToggleStatus(user)}
                                 className="cursor-pointer gap-2 text-xs sm:text-sm"
@@ -662,7 +788,7 @@ export function UsersManagement() {
                     <CardTitle className="text-lg sm:text-xl truncate">
                       {selectedUser?.id
                         ? `${selectedUser.firstName} ${selectedUser.lastName}`
-                        : t('settings.createNewUser')
+                        : t('settings.createUserDescription')
                       }
                     </CardTitle>
                     <CardDescription className="text-xs sm:text-sm truncate">
@@ -695,15 +821,15 @@ export function UsersManagement() {
               </div>
             </CardHeader>
 
-            <ScrollArea className="h-[calc(90vh-160px)]">
+            <ScrollArea className="h-[calc(90vh-280px)] sm:h-[calc(90vh-220px)] md:h-[calc(90vh-200px)] lg:h-[calc(90vh-180px)]">
               <CardContent className="p-4 sm:p-6">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
-                  <TabsList className="grid grid-cols-2 w-full h-auto p-1">
-                    <TabsTrigger value="basic" className="flex-col h-auto py-2 px-1 gap-1 text-xs">
+                  <TabsList className="grid grid-cols-2 w-full h-auto p-1 sticky top-0 bg-card z-10">
+                    <TabsTrigger value="basic" className="flex-col h-auto py-3 px-1 gap-1 text-xs sm:text-sm">
                       <User className="h-4 w-4 mb-1" />
                       <span className="truncate">{t('settings.basicInfo')}</span>
                     </TabsTrigger>
-                    <TabsTrigger value="roles" className="flex-col h-auto py-2 px-1 gap-1 text-xs">
+                    <TabsTrigger value="roles" className="flex-col h-auto py-3 px-1 gap-1 text-xs sm:text-sm">
                       <Shield className="h-4 w-4 mb-1" />
                       <span className="truncate">{t('settings.roles')}</span>
                     </TabsTrigger>
@@ -793,7 +919,7 @@ export function UsersManagement() {
                             <Globe className="h-4 w-4" />
                             {t('settings.language')}
                           </Label>
-                          <Select 
+                          <Select
                             value={formData.language}
                             onValueChange={(value) => updateFormData('language', value)}
                           >
@@ -811,9 +937,6 @@ export function UsersManagement() {
                               ))}
                             </SelectContent>
                           </Select>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {t('settings.languageDescription')}
-                          </p>
                         </div>
 
                         {/* Status */}
@@ -906,8 +1029,8 @@ export function UsersManagement() {
                               <Card
                                 key={role.id}
                                 className={`cursor-pointer transition-all hover:border-primary/50 ${selectedRoles.has(role.id)
-                                    ? 'border-primary bg-primary/5'
-                                    : 'border-border'
+                                  ? 'border-primary bg-primary/5'
+                                  : 'border-border'
                                   }`}
                                 onClick={() => handleToggleRole(role.id)}
                               >
@@ -916,8 +1039,8 @@ export function UsersManagement() {
                                     <div className="space-y-1 sm:space-y-2 flex-1 min-w-0">
                                       <div className="flex items-center gap-2 sm:gap-3">
                                         <div className={`h-7 w-7 sm:h-8 sm:w-8 rounded-lg flex items-center justify-center flex-shrink-0 ${selectedRoles.has(role.id)
-                                            ? 'bg-primary/10 text-primary'
-                                            : 'bg-muted text-muted-foreground'
+                                          ? 'bg-primary/10 text-primary'
+                                          : 'bg-muted text-muted-foreground'
                                           }`}>
                                           <Shield className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                                         </div>
@@ -964,15 +1087,16 @@ export function UsersManagement() {
               </CardContent>
             </ScrollArea>
 
-            {/* Footer do Modal */}
+            {/* Footer do Modal  */}
             <div className="border-t bg-muted/20 p-3 sm:p-6">
               <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
+                {/* Texto informativo */}
                 <div className="text-xs sm:text-sm text-muted-foreground w-full sm:w-auto text-center sm:text-left">
                   {selectedUser?.id ? (
                     <div className="flex items-center justify-center sm:justify-start gap-2">
                       <User className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                      <span className="truncate">
-                        {t('settings.editingUser')}: <strong className="truncate">{selectedUser.firstName} {selectedUser.lastName}</strong>
+                      <span className="truncate max-w-[180px] sm:max-w-none">
+                        {t('settings.editingUser')}: <strong>{selectedUser.firstName} {selectedUser.lastName}</strong>
                       </span>
                     </div>
                   ) : (
@@ -982,7 +1106,9 @@ export function UsersManagement() {
                     </div>
                   )}
                 </div>
-                <div className="flex gap-2 sm:gap-3 w-full sm:w-auto">
+
+                {/* BOTÕES - CORRIGIR AQUI */}
+                <div className="flex flex-col-reverse sm:flex-row gap-2 w-full sm:w-auto">
                   <Button
                     variant="outline"
                     onClick={() => {
@@ -990,24 +1116,35 @@ export function UsersManagement() {
                       setSelectedUser(null);
                       setSelectedRoles(new Set());
                     }}
-                    className="flex-1 sm:flex-none text-xs sm:text-sm h-9 sm:h-10"
+                    className="w-full sm:w-auto min-w-[100px] px-4 h-10 sm:h-11 text-sm gap-2 flex-1 sm:flex-none"
                   >
                     {t('common.cancel')}
                   </Button>
                   <Button
                     onClick={handleSaveUser}
                     disabled={isSaving}
-                    className="flex-1 sm:flex-none text-xs sm:text-sm h-9 sm:h-10 gap-1 sm:gap-2"
+                    className="w-full sm:w-auto min-w-[120px] px-4 h-10 sm:h-11 text-sm gap-2 flex-1 sm:flex-none"
                   >
                     {isSaving ? (
-                      <RefreshCw className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" />
+                      <RefreshCw className="h-4 w-4 animate-spin" />
                     ) : (
-                      <Save className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      <Save className="h-4 w-4" />
                     )}
                     {selectedUser?.id ? t('settings.updateUser') : t('settings.createUser')}
                   </Button>
                 </div>
               </div>
+            </div>
+          </Card>
+        </div>
+      )}
+      {resendLoading && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]">
+          <Card className="bg-card p-6 shadow-2xl">
+            <div className="flex flex-col items-center gap-4">
+              <RefreshCw className="h-8 w-8 animate-spin text-primary" />
+              <p className="text-sm font-medium">{t('common.sendingInvite')}</p>
+              <p className="text-xs text-muted-foreground">{t('common.loadingPleaseWait')}</p>
             </div>
           </Card>
         </div>

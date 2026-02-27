@@ -42,7 +42,7 @@ const resetPasswordRoute = createRoute({
   path: '/reset-password',
   component: ResetPasswordForm,
 });
-  
+
 const verifyEmailPage = createRoute({
   getParentRoute: () => rootRoute,
   path: '/verify-email',
@@ -53,6 +53,12 @@ const inviteConfirmationPage = createRoute({
   getParentRoute: () => rootRoute,
   path: '/invite/confirm',
   component: InviteConfirmationPage,
+  validateSearch: (search: Record<string, unknown>) => {
+    return {
+      token: search.token as string | undefined,
+      email: search.email as string | undefined,
+    };
+  },
 });
 
 // Dashboard route (protected with permission)
