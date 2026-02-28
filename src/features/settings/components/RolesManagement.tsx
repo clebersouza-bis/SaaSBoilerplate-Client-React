@@ -50,6 +50,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import api from '@/lib/api/client';
+import { extractApiErrorMessage } from '@/lib/api/error-utils';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Dialog,
@@ -100,7 +101,7 @@ interface AllPermissionsResponse {
 }
 
 export function RolesManagement() {
-  const { t } = useTranslation();
+  const { t, hasTranslation } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [showRoleDialog, setShowRoleDialog] = useState(false);
   const [selectedRole, setSelectedRole] = useState<ApiRole | null>(null);
@@ -349,10 +350,10 @@ export function RolesManagement() {
       };
 
       if (selectedRole?.id) {
-        await api.put(`/roles/${selectedRole.id}`, formData);
+        await api.put(`/roles/${selectedRole.id}`, formData, { skipErrorToast: true });
         toast.success(t('settings.roleUpdated'));
       } else {
-        await api.post('/roles', formData);
+        await api.post('/roles', formData, { skipErrorToast: true });
         toast.success(t('settings.roleCreated'));
       }
 
@@ -361,7 +362,13 @@ export function RolesManagement() {
       await loadData();
     } catch (error) {
       console.error('Error saving role:', error);
-      toast.error(t('common.errorSaving'));
+      toast.error(
+        extractApiErrorMessage(error, {
+          t,
+          hasTranslation,
+          fallbackMessage: t('common.errorSaving'),
+        })
+      );
     } finally {
       setIsSaving(false);
     }
