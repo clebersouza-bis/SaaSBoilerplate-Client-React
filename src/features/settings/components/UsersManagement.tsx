@@ -43,6 +43,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useTranslation } from '@/hooks/useTranslation';
+import { extractApiErrorMessage } from '@/lib/api/error-utils';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
@@ -107,7 +108,7 @@ interface FormData {
 }
 
 export function UsersManagement() {
-  const { t } = useTranslation();
+  const { t, hasTranslation } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRole, setSelectedRole] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
@@ -370,9 +371,13 @@ export function UsersManagement() {
 
     } catch (error: any) {
       console.error('Error saving user:', error);
-      const errorMsg = error.response?.data?.errors?.[0] || error.response?.data?.message;
+      const errorMsg = extractApiErrorMessage(error, {
+        t,
+        hasTranslation,
+        fallbackMessage: t('common.errorSaving'),
+      });
       toast({
-        title: errorMsg || t('common.errorSaving'),
+        title: errorMsg,
         variant: 'destructive',
         duration: 3000,
 
