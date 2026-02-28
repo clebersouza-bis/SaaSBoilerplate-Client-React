@@ -1,11 +1,27 @@
 export function inferResourceFromUrl(url: string): string {
-  if (url.includes('/customers')) return 'customers';
-  if (url.includes('/users')) return 'users';
-  if (url.includes('/roles')) return 'roles';
-  if (url.includes('/products')) return 'products';
-  if (url.includes('/orders')) return 'orders';
-  if (url.includes('/settings')) return 'settings';
-  return 'resource';
+  if (!url) return 'resource';
+
+  try {
+    const normalizedUrl = url.startsWith('http')
+      ? new URL(url)
+      : new URL(url, 'http://localhost');
+
+    const pathSegments = normalizedUrl.pathname
+      .split('/')
+      .filter(Boolean)
+      .map(segment => segment.toLowerCase());
+
+    if (pathSegments.length === 0) return 'resource';
+
+    // Em URLs como /api/roles, ignorar o prefixo técnico "api"
+    const resourceSegment = pathSegments[0] === 'api'
+      ? pathSegments[1]
+      : pathSegments[0];
+
+    return resourceSegment || 'resource';
+  } catch {
+    return 'resource';
+  }
 }
 
 export function inferActionFromMethod(method: string): string {
@@ -24,4 +40,3 @@ export function inferActionFromMethod(method: string): string {
       return 'access';
   }
 }
-
