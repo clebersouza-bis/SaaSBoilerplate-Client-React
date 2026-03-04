@@ -30,9 +30,11 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useConfirmationDialog } from '@/components/providers/ConfirmationDialogProvider';
 
 export function SystemSettings() {
   const { t } = useTranslation();
+  const { confirm } = useConfirmationDialog();
   const [isSaving, setIsSaving] = useState(false);
   const [settings, setSettings] = useState({
     // General Settings
@@ -96,10 +98,17 @@ export function SystemSettings() {
     }, 1500);
   };
   
-  const handleResetSettings = () => {
-    if (window.confirm(t('settings.confirmResetSettings'))) {
-      console.log('Reset settings');
-    }
+  const handleResetSettings = async () => {
+    const confirmed = await confirm({
+      title: t('common.confirm'),
+      description: t('settings.confirmResetSettings'),
+      confirmText: t('common.yes'),
+      cancelText: t('common.cancel'),
+    });
+
+    if (!confirmed) return;
+
+    console.log('Reset settings');
   };
   
   const handleInputChange = (key: string, value: any) => {

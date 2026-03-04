@@ -43,6 +43,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useTranslation } from '@/hooks/useTranslation';
+import { extractApiErrorMessage } from '@/lib/api/error-utils';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
@@ -54,6 +55,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { LANGUAGES } from '@/lib/i18n/config';
+import { useConfirmationDialog } from '@/components/providers/ConfirmationDialogProvider';
 
 interface ApiUser {
   id: string;
@@ -106,8 +108,16 @@ interface FormData {
   language: string;
 }
 
+interface ApiEnvelope<T> {
+  success?: boolean;
+  data?: T;
+  message?: string | null;
+  errorCode?: string | null;
+  statusCode?: number | null;
+}
+
 export function UsersManagement() {
-  const { t } = useTranslation();
+  const { t, hasTranslation } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRole, setSelectedRole] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
@@ -122,6 +132,16 @@ export function UsersManagement() {
   const [roles, setRoles] = useState<ApiRole[]>([]);
   const [selectedRoles, setSelectedRoles] = useState<Set<string>>(new Set());
   const [activeTab, setActiveTab] = useState('basic');
+  const { confirm } = useConfirmationDialog();
+
+  const unwrapArrayResponse = <T,>(payload: unknown): T[] => {
+    if (Array.isArray(payload)) return payload as T[];
+
+    const envelope = payload as ApiEnvelope<T[]>;
+    if (Array.isArray(envelope?.data)) return envelope.data;
+
+    return [];
+  };
 
   // Estado para dados do formulário (controlled components)
   const [formData, setFormData] = useState<FormData>({
@@ -142,8 +162,11 @@ export function UsersManagement() {
         api.get('/roles/all')
       ]);
 
-      setUsers(usersResponse.data || []);
-      const activeRoles = (rolesResponse.data || []).filter((role: ApiRole) => role.isActive);
+      const usersData = unwrapArrayResponse<ApiUser>(usersResponse.data);
+      const rolesData = unwrapArrayResponse<ApiRole>(rolesResponse.data);
+
+      setUsers(usersData);
+      const activeRoles = rolesData.filter((role: ApiRole) => role.isActive);
       setRoles(activeRoles);
 
     } catch (error) {
@@ -166,7 +189,9 @@ export function UsersManagement() {
   useEffect(() => {
     if (selectedUser && showUserDialog) {
       const userRoles = new Set(
-        selectedUser.userRoles?.map((ur: any) => ur.role.id) || []
+        selectedUser.userRoles
+          ?.map((ur: any) => ur?.role?.id)
+          .filter(Boolean) || []
       );
       setSelectedRoles(userRoles);
 
@@ -205,10 +230,10 @@ export function UsersManagement() {
     const matchesSearch =
       `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.phone?.toLowerCase().includes(searchTerm.toLowerCase()) || false;
+      (user.phone?.toLowerCase()?.includes(searchTerm.toLowerCase()) ?? false);
 
     const matchesRole = selectedRole === 'all' ||
-      user.userRoles?.some((ur: any) => ur.role.id === selectedRole) || false;
+      user.userRoles?.some((ur: any) => ur?.role?.id === selectedRole) || false;
 
     const matchesStatus = selectedStatus === 'all' ||
       (selectedStatus === 'active' ? user.active : !user.active);
@@ -253,7 +278,14 @@ export function UsersManagement() {
   };
 
   const handleDeleteUser = async (userId: string) => {
-    if (!window.confirm(t('settings.confirmDeleteUser'))) return;
+    const confirmed = await confirm({
+      title: t('common.confirm'),
+      description: t('settings.confirmDeleteUser'),
+      confirmText: t('common.delete'),
+      cancelText: t('common.cancel'),
+    });
+
+    if (!confirmed) return;
 
     try {
       await api.delete(`/users/${userId}`);
@@ -356,13 +388,6 @@ export function UsersManagement() {
 
         });
       }
-      setTimeout(() => {
-        setShowUserDialog(false);
-        setSelectedUser(null);
-        setSelectedRoles(new Set());
-        loadData();
-      }, 500);
-
       setShowUserDialog(false);
       setSelectedUser(null);
       setSelectedRoles(new Set());
@@ -370,9 +395,13 @@ export function UsersManagement() {
 
     } catch (error: any) {
       console.error('Error saving user:', error);
-      const errorMsg = error.response?.data?.errors?.[0] || error.response?.data?.message;
+      const errorMsg = extractApiErrorMessage(error, {
+        t,
+        hasTranslation,
+        fallbackMessage: t('common.errorSaving'),
+      });
       toast({
-        title: errorMsg || t('common.errorSaving'),
+        title: errorMsg,
         variant: 'destructive',
         duration: 3000,
 
@@ -648,7 +677,7 @@ export function UsersManagement() {
                         <div className="flex flex-wrap gap-1">
                           {user.userRoles?.slice(0, 2).map((ur: any, index: number) => (
                             <Badge key={index} variant="outline" className="text-xs px-1.5 py-0.5 truncate max-w-[80px]">
-                              {ur.role.name}
+                              {ur?.role?.name || t('settings.noRole')}
                             </Badge>
                           ))}
                           {user.userRoles && user.userRoles.length > 2 && (

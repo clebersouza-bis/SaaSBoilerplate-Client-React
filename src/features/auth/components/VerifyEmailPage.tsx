@@ -12,6 +12,8 @@ import { Input } from '@/components/ui/input';
 
 type VerificationStatus = 'loading' | 'success' | 'invalid' | 'expired' | 'error';
 
+const verifyTokenInFlight = new Map<string, Promise<ReturnType<typeof verifyEmail> extends Promise<infer T> ? T : never>>();
+
 export function VerifyEmailPage() {
   const navigate = useNavigate();
   const { token } = useSearch({ from: '/verify-email' }) as { token?: string };
@@ -44,7 +46,10 @@ export function VerifyEmailPage() {
 
       try {
         console.log('Verifying token:', token);
-        const result = await verifyEmail(token);
+        const pendingRequest = verifyTokenInFlight.get(token) || verifyEmail(token);
+        verifyTokenInFlight.set(token, pendingRequest);
+
+        const result = await pendingRequest;
         
         if (result.success) {
           setStatus('success');
@@ -70,11 +75,14 @@ export function VerifyEmailPage() {
       } finally {
         // Marca como verificado independente do resultado
         hasVerified.current = true;
+        if (token) {
+          verifyTokenInFlight.delete(token);
+        }
       }
     };
 
     verifyToken();
-  }, [token, t]);
+  }, [token]);
 
   const handleResendVerification = async () => {
     if (!resendEmail) {

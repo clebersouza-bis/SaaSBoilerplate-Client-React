@@ -40,6 +40,7 @@ import {
 import { useCustomer } from '../hooks/useCustomers';
 import { useDeleteCustomer } from '../hooks/useCustomers';
 import { usePermissions } from '@/features/auth/hooks/usePermissions';
+import { useConfirmationDialog } from '@/components/providers/ConfirmationDialogProvider';
 import { useTranslation } from '@/hooks/useTranslation';
 import { cn } from '@/lib/utils';
 import type { CustomerAddressDto } from '@/types/customer';
@@ -50,6 +51,7 @@ export function CustomerDetailsPage() {
   const { id } = useParams({ from: '/customers/$id' });
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { confirm } = useConfirmationDialog();
   const { hasPermission } = usePermissions();
   
   const { data: customer, isLoading, error } = useCustomer(id);
@@ -66,18 +68,25 @@ export function CustomerDetailsPage() {
 
   const handleDeleteCustomer = async () => {
     if (!customer || !canDeleteCustomer) return;
-    
-    if (window.confirm(t('customer.deleteConfirm'))) {
-      try {
-        await deleteMutation.mutateAsync(customer.id);
-        toast({
-          title: t('customer.deleteSuccess'),
-          description: t('customer.deleteSuccessDescription'),
-        });
-        navigate({ to: '/customers' });
-      } catch (error) {
-        console.error('Failed to delete customer:', error);
-      }
+
+    const confirmed = await confirm({
+      title: t('common.confirm'),
+      description: t('customer.deleteConfirm'),
+      confirmText: t('common.delete'),
+      cancelText: t('common.cancel'),
+    });
+
+    if (!confirmed) return;
+
+    try {
+      await deleteMutation.mutateAsync(customer.id);
+      toast({
+        title: t('customer.deleteSuccess'),
+        description: t('customer.deleteSuccessDescription'),
+      });
+      navigate({ to: '/customers' });
+    } catch (error) {
+      console.error('Failed to delete customer:', error);
     }
   };
 
@@ -91,14 +100,21 @@ export function CustomerDetailsPage() {
       return;
     }
 
-    if (window.confirm(t('address.deleteConfirm'))) {
-      // TODO: Implementar API call para deletar endereço
-      console.log('Delete address:', addressId);
-      toast({
-        title: t('address.deleteSuccess'),
-        description: t('address.deleteSuccessDescription'),
-      });
-    }
+    const confirmed = await confirm({
+      title: t('common.confirm'),
+      description: t('address.deleteConfirm'),
+      confirmText: t('common.delete'),
+      cancelText: t('common.cancel'),
+    });
+
+    if (!confirmed) return;
+
+    // TODO: Implementar API call para deletar endereço
+    console.log('Delete address:', addressId);
+    toast({
+      title: t('address.deleteSuccess'),
+      description: t('address.deleteSuccessDescription'),
+    });
   };
 
   const handleSetPrimaryAddress = (addressId: string) => {
