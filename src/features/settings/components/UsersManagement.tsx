@@ -1,4 +1,4 @@
-// features/settings/components/UsersManagement.tsx - VERSÃO COMPLETA CORRIGIDA
+// features/settings/components/UsersManagement.tsx
 import * as React from 'react';
 import { useState, useEffect } from 'react';
 import {
@@ -46,7 +46,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { extractApiErrorMessage } from '@/lib/api/error-utils';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import api from '@/lib/api/client';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
@@ -125,7 +125,6 @@ export function UsersManagement() {
   const [selectedUser, setSelectedUser] = useState<ApiUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const { toast } = useToast();
   const [resendLoading, setResendLoading] = useState<string | null>(null);
   // Estados para dados da API
   const [users, setUsers] = useState<ApiUser[]>([]);
@@ -170,11 +169,8 @@ export function UsersManagement() {
       setRoles(activeRoles);
 
     } catch (error) {
-      toast({
-        title: t('common.errorLoadingData'),
-        variant: 'destructive',
+      toast.error(t('common.errorLoadingData'), {
         duration: 3000,
-
       });
     } finally {
       setIsLoading(false);
@@ -241,26 +237,20 @@ export function UsersManagement() {
     return matchesSearch && matchesRole && matchesStatus;
   });
 
-  // Adicione a função para reenviar convite
+  // Função para reenviar convite
   const handleResendInvite = async (userId: string, email: string) => {
     setResendLoading(userId);
     try {
       await api.post(`/users/resend-invite`, { userId });
-      toast({
-        title: t('settings.inviteResent'),
+      toast.success(t('settings.inviteResent'), {
         description: t('settings.inviteResentDescription', { email }),
         duration: 3000,
         className: "bg-yellow-50 border-yellow-200 text-yellow-800",
-
-
       });
     } catch (error) {
       console.error('Error resending invite:', error);
-      toast({
-        title: t('common.errorSendingInvite'),
-        variant: 'destructive',
+      toast.error(t('common.errorSendingInvite'), {
         duration: 3000,
-
       });
     } finally {
       setResendLoading(null);
@@ -289,16 +279,14 @@ export function UsersManagement() {
 
     try {
       await api.delete(`/users/${userId}`);
-      toast({
-        title: t('settings.userDeleted'),
+      toast.success(t('settings.userDeleted'), {
         description: t('settings.userDeletedDescription', { email: formData.email }),
         duration: 3000,
       });
       await loadData();
     } catch (error) {
       console.error('Error deleting user:', error);
-      toast({
-        title: t('settings.errorDeletingUser'),
+      toast.error(t('settings.errorDeletingUser'), {
         description: t('settings.errorDeletingUserDescription', { email: formData.email }),
         duration: 3000,
       });
@@ -310,20 +298,15 @@ export function UsersManagement() {
       await api.patch(`/users/${user.id}`, {
         active: !user.active
       });
-      toast({
-        title: user.active ? t('settings.userDeactivated') : t('settings.userActivated'),
+      toast.success(user.active ? t('settings.userDeactivated') : t('settings.userActivated'), {
         description: t('settings.userStatusChangedDescription', { email: user.email }),
         duration: 3000,
-
-      })
+      });
       await loadData();
     } catch (error) {
-      toast({
-        title: t('settings.errorUpdatingUser'),
+      toast.error(t('settings.errorUpdatingUser'), {
         description: t('settings.errorUpdatingUserDescription', { email: user.email }),
-        variant: 'destructive',
         duration: 3000,
-
       });
     }
   };
@@ -340,20 +323,16 @@ export function UsersManagement() {
 
   const handleSaveUser = async () => {
     if (!formData.firstName?.trim() || !formData.lastName?.trim()) {
-      toast({
-        title: t('settings.nameRequired'),
+      toast.error(t('settings.nameRequired'), {
         duration: 3000,
-
-      })
+      });
       return;
     }
 
     if (!formData.email?.trim()) {
-      toast({
-        title: t('settings.emailRequired'),
+      toast.error(t('settings.emailRequired'), {
         duration: 3000,
-
-      })
+      });
       return;
     }
 
@@ -371,29 +350,28 @@ export function UsersManagement() {
 
       if (selectedUser?.id) {
         await api.put(`/users/${selectedUser.id}`, userData);
-        toast({
-          title: t('settings.userUpdated'),
+
+        toast.success(t('settings.userUpdated'), {
           description: t('settings.userUpdatedDescription', { email: formData.email }),
           duration: 3000,
           className: "bg-blue-50 border-blue-200 text-blue-800",
-
         });
       } else {
         await api.post('/users', userData);
-        toast({
-          title: t('settings.userCreated'),
+        toast.success(t('settings.userCreated'), {
           description: t('settings.userCreatedDescription', { email: formData.email }),
           duration: 5000,
           className: "bg-blue-50 border-blue-200 text-blue-800",
-
         });
       }
       setShowUserDialog(false);
       setSelectedUser(null);
       setSelectedRoles(new Set());
-      await loadData();
+      setTimeout(async () => {
+        await loadData();
+      }, 1000);
 
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error saving user:', error);
       const errorMsg = extractApiErrorMessage(error, {
         t,
@@ -1116,7 +1094,7 @@ export function UsersManagement() {
               </CardContent>
             </ScrollArea>
 
-            {/* Footer do Modal  */}
+            {/* Footer do Modal */}
             <div className="border-t bg-muted/20 p-3 sm:p-6">
               <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
                 {/* Texto informativo */}
@@ -1136,7 +1114,7 @@ export function UsersManagement() {
                   )}
                 </div>
 
-                {/* BOTÕES - CORRIGIR AQUI */}
+                {/* BOTÕES */}
                 <div className="flex flex-col-reverse sm:flex-row gap-2 w-full sm:w-auto">
                   <Button
                     variant="outline"

@@ -735,5 +735,8 @@
     "newThisMonthDesc": "Clientes agregados este mes",
     "active": "Activo",
     "total": "Total"
+  },
+  "apiErrors": {
+    "DEFAULT_ROLE_UPDATE_FORBIDDEN": "No se puede actualizar el rol predeterminado del sistema. Cree un nuevo rol personalizado con los permisos deseados para asignar a los usuarios."
   }
 }
