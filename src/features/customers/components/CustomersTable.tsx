@@ -2,6 +2,7 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { usePermissions } from '@/features/auth/hooks/usePermissions';
+import { useConfirmationDialog } from '@/components/providers/ConfirmationDialogProvider';
 import {
   Table,
   TableBody,
@@ -72,6 +73,7 @@ interface CustomersTableProps {
 export function CustomersTable({ onEdit, onView, filters }: CustomersTableProps) {
   const { t } = useTranslation();
   const { hasPermission } = usePermissions();
+  const { confirm } = useConfirmationDialog();
   const [page, setPage] = useState(1);
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerDto | null>(null);
   const [isMobileView, setIsMobileView] = useState(false);
@@ -112,10 +114,17 @@ const handleDelete = async (id: string) => {
     console.warn('You don\'t have permission to delete customers.');
     return;
   }
-  
-  if (window.confirm(t('table.confirmDelete'))) {
-    await deleteMutation.mutateAsync(id);
-  }
+
+  const confirmed = await confirm({
+    title: t('common.confirm'),
+    description: t('table.confirmDelete'),
+    confirmText: t('common.delete'),
+    cancelText: t('common.cancel'),
+  });
+
+  if (!confirmed) return;
+
+  await deleteMutation.mutateAsync(id);
 };
 
   const handleViewMobile = (customer: CustomerDto) => {

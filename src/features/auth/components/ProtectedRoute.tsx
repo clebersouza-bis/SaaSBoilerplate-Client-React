@@ -1,6 +1,6 @@
 // features/auth/components/ProtectedRoute.tsx - VERSÃO OTIMIZADA
 import * as React from 'react';
-import { useState, useContext, useEffect } from 'react';
+import { useContext, useEffect } from 'react';
 import { Navigate, useLocation } from '@tanstack/react-router';
 import { useAuthStore } from '../stores/auth.store';
 import { AuthContext } from './AuthProvider';
@@ -19,7 +19,6 @@ export function ProtectedRoute({
   const { hasAllPermissions } = usePermissions();
   const authContext = useContext(AuthContext);
   const location = useLocation();
-  const [isValidating, setIsValidating] = useState(false);
   
   // Apenas valida se NUNCA validou antes ou se passou muito tempo
   useEffect(() => {
@@ -37,9 +36,9 @@ export function ProtectedRoute({
     };
     
     if (shouldValidate()) {
-      setIsValidating(true);
-      authContext.validateSession().finally(() => {
-        setIsValidating(false);
+      // Validação em background para não desmontar a tela atual e perder estado de formulário
+      authContext.validateSession().catch((error) => {
+        console.error('[ProtectedRoute] Background validation failed:', error);
       });
     }
   }, [isAuthenticated, location.pathname, authContext]);
@@ -48,15 +47,6 @@ export function ProtectedRoute({
   const hasRequiredPermissions = requiredPermissions.length === 0 
     ? true 
     : hasAllPermissions(requiredPermissions);
-
-  // Loading state (apenas durante validação ocasional)
-  if (isValidating) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-      </div>
-    );
-  }
 
   // Não autenticado
   if (!isAuthenticated) {
