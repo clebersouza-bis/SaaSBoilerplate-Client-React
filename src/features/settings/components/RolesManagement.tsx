@@ -367,7 +367,10 @@ export function RolesManagement() {
           t,
           hasTranslation,
           fallbackMessage: t('common.errorSaving'),
-        })
+        }),
+        {
+          duration: 8000
+        }
       );
     } finally {
       setIsSaving(false);

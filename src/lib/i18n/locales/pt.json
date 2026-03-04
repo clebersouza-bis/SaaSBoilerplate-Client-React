@@ -734,5 +734,8 @@
     "newThisMonthDesc": "Clientes adicionados este mês",
     "active": "Ativo",
     "total": "Total"
+  },
+  "apiErrors": {
+    "DEFAULT_ROLE_UPDATE_FORBIDDEN": "Não é permitido atualizar a função padrão do sistema. Crie uma nova função personalizada com os acessos desejados para atribuir aos usuários."
   }
 }

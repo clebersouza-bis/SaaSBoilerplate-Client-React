@@ -116,16 +116,16 @@ export function CustomerForm({
   });
 
   // Usando hooks com tratamento de permissão
-  const { 
-    mutation: updateMutation, 
+  const {
+    mutation: updateMutation,
     permissionError: updatePermissionError,
-    clearPermissionError: clearUpdateError 
+    clearPermissionError: clearUpdateError
   } = useUpdateCustomer();
-  
-  const { 
-    mutation: createMutation, 
+
+  const {
+    mutation: createMutation,
     permissionError: createPermissionError,
-    clearPermissionError: clearCreateError 
+    clearPermissionError: clearCreateError
   } = useCreateCustomer();
 
   const permissionError = isEditMode ? updatePermissionError : createPermissionError;
@@ -137,7 +137,7 @@ export function CustomerForm({
     if (customer) {
       // Encontra endereço principal ou usa o primeiro
       const primaryAddress = customer.addresses?.find(addr => addr.isPrimary) || customer.addresses?.[0];
-      
+
       form.reset({
         name: customer.name,
         email: customer.email || '',
@@ -160,51 +160,51 @@ export function CustomerForm({
     }
   }, [customer, form]);
 
-  const handleSubmit = async (values: CustomerFormValues) => {
-    try {
-      if (isEditMode && customer) {
-        // Preparar dados para atualização
-        const updateData: UpdateCustomerRequest = {
-          customerId: customer.id,
-          name: values.name,
-          email: values.email || undefined,
-          phone: values.phone || undefined,
-          isActive: values.isActive,
-        };
+ const handleSubmit = async (values: CustomerFormValues) => {
+  try {
+    if (isEditMode && customer) {
+      // Preparar dados para atualização
+      const updateData: UpdateCustomerRequest = {
+        customerId: customer.id,
+        name: values.name,
+        email: values.email || undefined,
+        phone: values.phone || undefined,
+        isActive: values.isActive,
+      };
 
-        await updateMutation.mutateAsync({
-          id: customer.id,
-          data: updateData,
-        });
-      } else {
-        // Preparar dados para criação
-        const createData: CreateCustomerRequest = {
-          name: values.name,
-          email: values.email || undefined,
-          phone: values.phone || undefined,
-          isActive: values.isActive,
-          addressIsPrimary: values.address?.isPrimary || true,
-          // Inclui customerAddress se tiver dados
-          ...(values.address && Object.values(values.address).some(val => val) && {
-            customerAddress: {
-              ...values.address,
-              id: '', // Será gerado pelo backend
-              isPrimary: values.address.isPrimary,
-            } as CustomerAddressDto
-          })
-        };
+      await updateMutation.mutateAsync({
+        id: customer.id,
+        data: updateData,
+      });
+    } else {
+      // Preparar dados para criação
+      const createData: CreateCustomerRequest = {
+        name: values.name,
+        email: values.email || undefined,
+        phone: values.phone || undefined,
+        isActive: values.isActive,
+        addressIsPrimary: values.address?.isPrimary || true,
+      };
 
-        await createMutation.mutateAsync(createData);
+      // Inclui customerAddress APENAS se tiver dados
+      if (values.address && Object.values(values.address).some(val => val)) {
+        createData.customerAddress = {
+          ...values.address,
+          isPrimary: values.address.isPrimary,
+        } as CustomerAddressDto;
       }
-      
-      // Sucesso - fecha o form ou faz redirect
-      onSuccess();
-      
-    } catch (error) {
-      // Erro já tratado pelos hooks/interceptors
-      console.error('Form submission error:', error);
+
+      await createMutation.mutateAsync(createData);
     }
-  };
+
+    // Sucesso - fecha o form ou faz redirect
+    onSuccess();
+
+  } catch (error) {
+    // Erro já tratado pelos hooks/interceptors
+    console.error('Form submission error:', error);
+  }
+};
 
   // Países comuns para select
   const countries = [
@@ -563,7 +563,7 @@ export function CustomerForm({
                       />
                     </FormControl>
                     <FormMessage />
-                </FormItem>
+                  </FormItem>
                 )}
               />
             </CardContent>
@@ -597,7 +597,7 @@ export function CustomerForm({
                   {isEditMode ? t('customer.saveChanges') : t('customer.createCustomer')}
                 </>
               )}
-              
+
               {/* Indicador visual de erro de permissão */}
               {permissionError.show && (
                 <span className="absolute -top-1 -right-1">
