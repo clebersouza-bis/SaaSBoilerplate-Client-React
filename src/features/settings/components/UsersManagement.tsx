@@ -386,17 +386,19 @@ export function UsersManagement() {
         await loadData();
       }, 1000);
 
-    } catch (error) {
-      toast.error(
-        extractApiErrorMessage(error, {
-          t,
-          hasTranslation,
-          fallbackMessage: t('common.errorSaving'),
-        }),
-        {
-          duration: 8000,
-        }
-      );
+    } catch (error: any) {
+      console.error('Error saving user:', error);
+      const errorMsg = extractApiErrorMessage(error, {
+        t,
+        hasTranslation,
+        fallbackMessage: t('common.errorSaving'),
+      });
+      toast({
+        title: errorMsg,
+        variant: 'destructive',
+        duration: 3000,
+
+      });
     } finally {
       setIsSaving(false);
     }

@@ -30,7 +30,8 @@ import {
   ArrowUpDown,
   ChevronLeft,
   ChevronRight,
-  Smartphone
+  Smartphone,
+  Building2,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -295,7 +296,7 @@ const handleDelete = async (id: string) => {
 
         {/* Mobile Details Dialog */}
         <Dialog open={showMobileDetails} onOpenChange={setShowMobileDetails}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{selectedCustomer?.name}</DialogTitle>
               <DialogDescription>
@@ -305,7 +306,7 @@ const handleDelete = async (id: string) => {
 
             {selectedCustomer && (
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-muted-foreground">{t('customer.email')}</p>
                     <p>{selectedCustomer.email || '-'}</p>
@@ -317,13 +318,43 @@ const handleDelete = async (id: string) => {
                 </div>
 
                 <div>
-                  <p className="text-sm text-muted-foreground">{t('customer.status')}</p>
+                  <p className="text-sm text-muted-foreground">{t('customer.table.status')}</p>
                   <Badge className={cn(
                     statusColors[selectedCustomer.isActive ? 'active' : 'inactive'],
                     "mt-1"
                   )}>
                     {selectedCustomer.isActive ? t('customer.status.active') : t('customer.status.inactive')}
                   </Badge>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">{t('customer.table.addresses')}</p>
+                  {selectedCustomer.addresses?.length ? (
+                    <div className="space-y-2">
+                      {selectedCustomer.addresses.map((address) => (
+                        <div key={address.id} className="rounded-md border p-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-medium text-sm flex items-center gap-1">
+                              <Building2 className="h-3.5 w-3.5" />
+                              {address.label || t('customer.address')}
+                            </span>
+                            {address.isPrimary && (
+                              <Badge variant="secondary" className="text-xs">
+                                {t('customer.primary')}
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-1 break-words">
+                            {address.line1 || '-'}
+                            {address.city ? `, ${address.city}` : ''}
+                            {address.state ? ` - ${address.state}` : ''}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm">{t('customer.table.noAddress')}</p>
+                  )}
                 </div>
 
                 <div className="flex gap-2 pt-4">
