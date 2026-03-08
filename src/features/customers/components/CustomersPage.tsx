@@ -51,7 +51,7 @@ export function CustomersPage() {
     
     // Total de clientes
     const totalCustomers = customers.length;
-    
+
     // Clientes ativos
     const activeCustomers = customers.filter(c => c.isActive).length;
     

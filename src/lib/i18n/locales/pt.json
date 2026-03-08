@@ -135,7 +135,7 @@
     "somethingWentWrong": "Algo deu errado. Por favor, tente novamente.",
     "goHome": "Ir para a página inicial",
     "errorSaving": "Erro ao salvar as alterações. Por favor, tente novamente.",
-     "previous": "Anterior",
+    "previous": "Anterior",
     "next": "Próximo"
   },
   "auth": {
@@ -308,7 +308,7 @@
     "setupPasswordToContinue": "Configure sua senha para continuar",
     "createYourPassword": "Crie sua senha",
     "accountCreated": "Conta criada com sucesso.",
-          "welcomeBack": "Bem-vindo de volta!",
+    "welcomeBack": "Bem-vindo de volta!",
     "accountFound": "Conta encontrada",
     "existingAccountMessage": "Uma conta associada a este email já existe.",
     "proceedToLogin": "Clique aqui para continuar ao login"
@@ -609,7 +609,6 @@
     "updateUser": "Atualizar Usuário",
     "createUser": "Criar Usuário",
     "groups": "Grupos",
-
     "neverLoggedIn": "Nunca logou",
     "rolesManagementDescription": "Gerencie funções e suas permissões",
     "totalRoles": "Total de Funções",
@@ -721,7 +720,12 @@
     "preferencesNotice": "Essas configurações são aplicadas quando o usuário faz login",
     "roleUpdated": "Função atualizada",
     "roleCreated": "Função criada",
-    "roleDeleted": "Função excluída"    
+    "roleDeleted": "Função excluída",
+    "nameRequired": "O nome e sobrenome são obrigatórios",
+    "emailRequired": "O endereço de email é obrigatório",
+    "roleRequired": "Pelo menos uma função é obrigatória",
+    "invalidEmail": "O endereço de email não é válido",
+    "emailEditableForInvite": "Email pode ser editado pois há um convite pendente"
   },
   "stats": {
     "totalCustomers": "Total de Clientes",
@@ -734,5 +738,11 @@
     "newThisMonthDesc": "Clientes adicionados este mês",
     "active": "Ativo",
     "total": "Total"
+  },
+  "apiErrors": {
+    "EMAIL_USED_IN_OTHER_SUBSCRIPTION": "Este email já está associado a outra assinatura. Por favor, use um endereço de email diferente ou entre em contato com o suporte para obter assistência.",
+    "USER_ALREADY_EXISTS_IN_COMPANY": "Este usuário já existe na empresa. Por favor, reative o usuário ou use um endereço de email diferente ou entre em contato com o suporte se você acredita que isso é um erro.",
+    "DEFAULT_ROLE_UPDATE_FORBIDDEN": "Não é permitido atualizar a função padrão do sistema. Crie uma nova função personalizada com os acessos desejados para atribuir aos usuários.",
+    "DEFAULT_ROLE_DELETE_FORBIDDEN": "Não é permitido excluir a função padrão do sistema. Crie uma nova função personalizada com os acessos desejados para atribuir aos usuários."
   }
 }
