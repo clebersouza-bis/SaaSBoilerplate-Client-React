@@ -260,7 +260,13 @@ export function RolesManagement() {
       toast.success(t('settings.roleDeleted'));
       await loadData();
     } catch (error) {
-      toast.error(t('common.errorDeleting'));
+      toast.error(
+        extractApiErrorMessage(error, {
+          t,
+          hasTranslation,
+          fallbackMessage: t('common.errorSaving'),
+        })
+      );
     } finally {
       setShowConfirmDialog(false);
       setConfirmAction({ type: 'activate', role: null });

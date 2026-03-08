@@ -924,7 +924,13 @@
     "errorCreatingUserDescription": "An error occurred while trying to create a new user with email {{email}}",
     "roleUpdated": "Role updated",
     "roleCreated": "Role created",
-    "roleDeleted": "Role deleted"
+    "roleDeleted": "Role deleted",
+    "nameRequired": "The name and last name are required",
+    "emailRequired": "The email address is required",
+    "roleRequired": "At least one role is required",
+    "invalidEmail": "The email address is not valid",
+     "emailEditableForInvite": "Email can only be edited for pending invites"
+
   },
   "stats": {
     "totalCustomers": "Total Customers",
@@ -942,11 +948,14 @@
     "dataBasedOnApi": "Data updated at {timestamp} from API"
   },
   "apiErrors": {
+    "EMAIL_USED_IN_OTHER_SUBSCRIPTION": "This email is already associated with another subscription. Please use a different email address or contact support for assistance.",
+    "USER_ALREADY_EXISTS_IN_COMPANY": "This user already exists in the company. Please reactivate the user or use a different email address or contact support if you believe this is an error.",
     "DEFAULT_ROLE_UPDATE_FORBIDDEN": "You cannot update the default system role. Please create a new role and assign it as default if you want to make changes.",
     "ROLE_IN_USE_DELETE_FORBIDDEN": "This role is currently assigned to users and cannot be deleted. Please reassign or remove the role from all users before deleting.",
     "USER_IN_USE_DELETE_FORBIDDEN": "This user cannot be deleted because they are currently active. Please deactivate the user before attempting deletion.",
     "USER_ALREADY_EXISTS": "A user with this email already exists. Please use a different email address or contact support if you believe this is an error.",
     "ROLE_ALREADY_EXISTS": "A role with this name already exists. Please choose a different name for the role.",
+    "DEFAULT_ROLE_DELETE_FORBIDDEN": "Default system roles' can not be removed.",
     "INVALID_ROLE_PERMISSIONS": "One or more permissions assigned to this role are invalid. Please review the permissions and try again.",
     "MISSING_REQUIRED_FIELDS": "Some required fields are missing. Please fill in all required fields and try again.",
     "INVALID_EMAIL_FORMAT": "The email address provided is not in a valid format. Please enter a valid email address.",

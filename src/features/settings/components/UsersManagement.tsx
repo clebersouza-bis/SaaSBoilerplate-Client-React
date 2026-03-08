@@ -252,6 +252,7 @@ export function UsersManagement() {
       toast.error(t('common.errorSendingInvite'), {
         duration: 3000,
       });
+
     } finally {
       setResendLoading(null);
     }
@@ -336,6 +337,20 @@ export function UsersManagement() {
       return;
     }
 
+    if (!formData.email?.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+      toast.error(t('settings.invalidEmail'), {
+        duration: 3000,
+      });
+      return;
+    }
+
+    if (selectedRoles.size === 0) {
+      toast.error(t('settings.roleRequired'), {
+        duration: 3000,
+      });
+      return;
+    }
+
     setIsSaving(true);
     try {
       const userData: any = {
@@ -372,18 +387,16 @@ export function UsersManagement() {
       }, 1000);
 
     } catch (error) {
-      console.error('Error saving user:', error);
-      const errorMsg = extractApiErrorMessage(error, {
-        t,
-        hasTranslation,
-        fallbackMessage: t('common.errorSaving'),
-      });
-      toast({
-        title: errorMsg,
-        variant: 'destructive',
-        duration: 3000,
-
-      });
+      toast.error(
+        extractApiErrorMessage(error, {
+          t,
+          hasTranslation,
+          fallbackMessage: t('common.errorSaving'),
+        }),
+        {
+          duration: 8000,
+        }
+      );
     } finally {
       setIsSaving(false);
     }
@@ -854,6 +867,7 @@ export function UsersManagement() {
                           </Label>
                           <Input
                             id="first-name"
+                            tabIndex={1}
                             placeholder={t('settings.firstNamePlaceholder')}
                             value={formData.firstName}
                             onChange={(e) => updateFormData('firstName', e.target.value)}
@@ -861,24 +875,32 @@ export function UsersManagement() {
                           />
                         </div>
 
-                        <div className="space-y-2">
+                        <div className="space-y-2" >
                           <Label htmlFor="email" className="flex items-center gap-2 text-sm">
                             <Mail className="h-4 w-4" />
                             {t('settings.email')} <span className="text-destructive">*</span>
                           </Label>
                           <Input
                             id="email"
+                            tabIndex={3}
                             type="email"
                             placeholder="user@company.com"
                             value={formData.email}
                             onChange={(e) => updateFormData('email', e.target.value)}
                             className="h-9 sm:h-10"
-                            disabled={!!selectedUser?.id}
+                            disabled={!!selectedUser?.id && !hasPendingInvite(selectedUser)}
+
                           />
                           {selectedUser?.emailConfirmed && (
                             <div className="flex items-center gap-2 text-xs sm:text-sm text-green-600">
                               <CheckCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                               {t('settings.emailConfirmed')}
+                            </div>
+                          )}
+                          {selectedUser?.id && hasPendingInvite(selectedUser) && (
+                            <div className="flex items-center gap-2 text-xs sm:text-sm text-blue-600">
+                              <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                              {t('settings.emailEditableForInvite')} {/* Você precisa criar essa chave de tradução */}
                             </div>
                           )}
                         </div>
@@ -890,6 +912,7 @@ export function UsersManagement() {
                           </Label>
                           <Input
                             id="phone"
+                            tabIndex={5}
                             placeholder="+(999) 999-9999"
                             value={formData.phone}
                             onChange={(e) => updateFormData('phone', e.target.value)}
@@ -913,6 +936,7 @@ export function UsersManagement() {
                           </Label>
                           <Input
                             id="last-name"
+                            tabIndex={2}
                             placeholder={t('settings.lastNamePlaceholder')}
                             value={formData.lastName}
                             onChange={(e) => updateFormData('lastName', e.target.value)}

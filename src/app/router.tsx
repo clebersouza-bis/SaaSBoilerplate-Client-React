@@ -79,7 +79,7 @@ const profileRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/profile',
   component: () => (
-    <ProtectedRoute requiredPermissions={['profile.read']}>
+    <ProtectedRoute>
       <AppLayout>
         <ProfilePage />
       </AppLayout>

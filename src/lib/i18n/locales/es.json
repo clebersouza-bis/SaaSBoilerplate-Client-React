@@ -129,7 +129,7 @@
     "somethingWentWrong": "Algo salió mal. Por favor, inténtalo de nuevo.",
     "goHome": "Ir a Inicio",
     "errorSaving": "Error al guardar los cambios. Por favor, inténtalo de nuevo.",
-     "previous": "Anterior",
+    "previous": "Anterior",
     "next": "Siguiente"
   },
   "auth": {
@@ -613,7 +613,6 @@
     "updateUser": "Actualizar Usuario",
     "createUser": "Crear Usuario",
     "groups": "Grupos",
-
     "neverLoggedIn": "Nunca ha iniciado sesión",
     "rolesManagementDescription": "Gestionar roles y sus permisos",
     "totalRoles": "Roles Totales",
@@ -720,9 +719,14 @@
     "createRolesFirst": "Crea roles primero en la Gestión de Roles para asignarlos a los usuarios.",
     "userCreationNotice": "El usuario recibirá un correo electrónico con instrucciones para activar su cuenta.",
     "preferencesNotice": "Estas configuraciones se aplican cuando el usuario inicia sesión.",
-      "roleUpdated": "Rol actualizado",
+    "roleUpdated": "Rol actualizado",
     "roleCreated": "Rol creado",
-    "roleDeleted": "Rol eliminado"
+    "roleDeleted": "Rol eliminado",
+    "nameRequired": "El nombre y apellido son obligatorios",
+    "emailRequired": "El correo electrónico es obligatorio",
+    "roleRequired": "Al menos un rol es obligatorio",
+    "invalidEmail": "El correo electrónico no es válido",
+    "emailEditableForInvite": "El correo electrónico solo se puede editar para usuarios con invitación pendiente"
   },
   "stats": {
     "totalCustomers": "Total de Clientes",
@@ -737,6 +741,9 @@
     "total": "Total"
   },
   "apiErrors": {
-    "DEFAULT_ROLE_UPDATE_FORBIDDEN": "No se puede actualizar el rol predeterminado del sistema. Cree un nuevo rol personalizado con los permisos deseados para asignar a los usuarios."
+    "EMAIL_USED_IN_OTHER_SUBSCRIPTION": "Este correo electrónico ya está asociado con otra suscripción. Por favor, use una dirección de correo diferente o póngase en contacto con el soporte para obtener ayuda.",
+    "USER_ALREADY_EXISTS_IN_COMPANY": "Este usuario ya existe en la empresa. Por favor, reactiva el usuario o usa una dirección de correo diferente o contacta con el soporte si crees que esto es un error.",
+    "DEFAULT_ROLE_UPDATE_FORBIDDEN": "No se puede actualizar el rol predeterminado del sistema. Cree un nuevo rol personalizado con los permisos deseados para asignar a los usuarios.",
+    "DEFAULT_ROLE_DELETE_FORBIDDEN": "Los roles del sistema predeterminados no pueden ser eliminados."
   }
 }

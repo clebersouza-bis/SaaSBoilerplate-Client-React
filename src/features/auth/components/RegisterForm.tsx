@@ -22,6 +22,8 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
+import { toast } from 'sonner';
+import { extractApiErrorMessage } from '@/lib/api/error-utils';
 
 // Validação de senha
 const validatePassword = (password: string) => {
@@ -53,7 +55,7 @@ const validatePassword = (password: string) => {
 
 export function RegisterForm() {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, hasTranslation } = useTranslation();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -121,9 +123,18 @@ export function RegisterForm() {
         navigate({ to: '/login' });
       }, 2000);
 
-    } catch (err: any) {
-      console.error('Registration error:', err);
-      setError(err.response?.data?.message || t('auth.registrationFailed'));
+    } catch (error) {
+      toast.error(
+        extractApiErrorMessage(error, {
+          t,
+          hasTranslation,
+          fallbackMessage: t('common.errorSaving'),
+          
+        }),
+        {
+          duration: 10000
+        }
+      );
     } finally {
       setIsLoading(false);
     }
@@ -261,7 +272,7 @@ export function RegisterForm() {
                   id="company"
                   name="company"
                   type="text"
-                  placeholder='Marriott International' 
+                  placeholder='Marriott International'
                   value={formData.company}
                   onChange={handleChange}
                   className="pl-10 bg-background/50 border-input focus:border-primary focus:ring-2 focus:ring-primary/20"
@@ -355,7 +366,7 @@ export function RegisterForm() {
                   <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all duration-300 ${passwordValidation.strength <= 2 ? 'bg-red-500' :
-                          passwordValidation.strength <= 4 ? 'bg-yellow-500' : 'bg-green-500'
+                        passwordValidation.strength <= 4 ? 'bg-yellow-500' : 'bg-green-500'
                         }`}
                       style={{ width: `${(passwordValidation.strength / 5) * 100}%` }}
                     />
@@ -424,10 +435,10 @@ export function RegisterForm() {
                   onChange={handleChange}
                   required
                   className={`pl-10 pr-10 bg-background/50 border-input focus:ring-2 focus:ring-primary/20 ${formData.confirmPassword
-                      ? passwordsMatch
-                        ? 'border-green-500 focus:border-green-500'
-                        : 'border-red-500 focus:border-red-500'
-                      : 'focus:border-primary'
+                    ? passwordsMatch
+                      ? 'border-green-500 focus:border-green-500'
+                      : 'border-red-500 focus:border-red-500'
+                    : 'focus:border-primary'
                     }`}
                   disabled={isLoading}
                 />
