@@ -49,6 +49,8 @@ interface InviteData {
   role?: string;
 }
 
+const validateInviteInFlight = new Map<string, Promise<ValidateInviteResponse>>();
+
 export function InviteConfirmationPage() {
   const navigate = useNavigate();
   const search = useSearch({ from: '/invite/confirm' }) as { token?: string };
@@ -86,19 +88,24 @@ export function InviteConfirmationPage() {
 
       try {
         console.log('Validating invite with token:', token);
+
+        const pendingRequest =
+          validateInviteInFlight.get(token) ||
+          api.post<ValidateInviteResponse>('/auth/validate-invite',
+            { token },
+            {
+              skipAuth: true,
+              skipErrorToast: true,
+            }
+          ).then((response) => response.data);
+
+        validateInviteInFlight.set(token, pendingRequest);
+
+        const responseData = await pendingRequest;
         
-        // Endpoint POST validate-invite
-        const response = await api.post<ValidateInviteResponse>('/auth/validate-invite', 
-          { token }, 
-          {
-            skipAuth: true,
-            skipErrorToast: true
-          }
-        );
+        console.log('Validation response:', responseData);
         
-        console.log('Validation response:', response.data);
-        
-        const { isValidToken, isTokenExpired, isNewUser, companyName } = response.data;
+        const { isValidToken, isTokenExpired, isNewUser, companyName } = responseData;
         
         // Token inválido
         if (!isValidToken) {
@@ -140,11 +147,14 @@ export function InviteConfirmationPage() {
         }
       } finally {
         hasVerified.current = true;
+        if (token) {
+          validateInviteInFlight.delete(token);
+        }
       }
     };
 
     validateInvite();
-  }, [token, t]);
+  }, [token]);
 
   const validatePassword = () => {
     const errors: string[] = [];

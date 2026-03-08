@@ -7,6 +7,7 @@ import { router } from './router';
 import { DebugPermissions } from '@/components/DebugPermissions';
 import { Toaster } from 'sonner';
 import { PermissionErrorProvider } from '@/components/providers/PermissionErrorProvider';
+import { ConfirmationDialogProvider } from '@/components/providers/ConfirmationDialogProvider';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -24,19 +25,21 @@ export function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <PermissionErrorProvider>
-          {/* Componentes de debug DEVEM ficar DENTRO do AuthProvider */}
-          <DebugPermissions />
+          <ConfirmationDialogProvider>
+            {/* Componentes de debug DEVEM ficar DENTRO do AuthProvider */}
+            <DebugPermissions />
 
-          {/* just one RouterProvider */}
-          <RouterProvider router={router} />
+            {/* just one RouterProvider */}
+            <RouterProvider router={router} />
 
-          {/* Toaster for notifications */}
-          <Toaster
-            position="top-right"
-            richColors
-            closeButton
-            duration={3000}
-          />
+            {/* Toaster for notifications */}
+            <Toaster
+              position="top-right"
+              richColors
+              closeButton
+              duration={3000}
+            />
+          </ConfirmationDialogProvider>
         </PermissionErrorProvider>
       </AuthProvider>
     </QueryClientProvider>

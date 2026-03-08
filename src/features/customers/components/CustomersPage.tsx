@@ -170,17 +170,17 @@ export function CustomersPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 overflow-x-hidden">
       {/* Header with Stats */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="space-y-1 min-w-0">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 bg-primary/10 rounded-xl flex items-center justify-center">
                 <Building2 className="h-5 w-5 text-primary" />
               </div>
-              <div>
-                <h1 className="text-3xl font-bold tracking-tight">
+              <div className="min-w-0">
+                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight break-words">
                   {t('customer.title')}
                 </h1>
                 <p className="text-muted-foreground">
@@ -189,11 +189,11 @@ export function CustomersPage() {
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
             <Button 
               variant="outline" 
               size="sm" 
-              className="gap-2"
+              className="gap-2 flex-1 sm:flex-none"
               disabled={isLoading}
             >
               <Download className="h-4 w-4" />
@@ -201,7 +201,7 @@ export function CustomersPage() {
             </Button>
             <Button 
               onClick={handleCreate} 
-              className="gap-2"
+              className="gap-2 flex-1 sm:flex-none"
               disabled={isLoading}
             >
               <Plus className="h-4 w-4" />
@@ -269,7 +269,7 @@ export function CustomersPage() {
                 disabled={isLoading}
               />
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -313,9 +313,9 @@ export function CustomersPage() {
       {/* Customers Table Card */}
       <Card className="border-border bg-card/50 backdrop-blur-sm overflow-hidden">
         <CardHeader className="border-b border-border">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle>{t('table.allCustomers')}</CardTitle>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <Badge variant="secondary" className="text-xs bg-green-500/20 text-green-600">
                 {t('stats.active')}: {statsData.activeCustomers}
               </Badge>
