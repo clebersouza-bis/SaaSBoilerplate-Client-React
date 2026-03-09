@@ -386,19 +386,17 @@ export function UsersManagement() {
         await loadData();
       }, 1000);
 
-    } catch (error: any) {
-      console.error('Error saving user:', error);
-      const errorMsg = extractApiErrorMessage(error, {
-        t,
-        hasTranslation,
-        fallbackMessage: t('common.errorSaving'),
-      });
-      toast({
-        title: errorMsg,
-        variant: 'destructive',
-        duration: 3000,
-
-      });
+    } catch (error) {
+      toast.error(
+        extractApiErrorMessage(error, {
+          t,
+          hasTranslation,
+          fallbackMessage: t('common.errorSaving'),
+        }),
+        {
+          duration: 8000,
+        }
+      );
     } finally {
       setIsSaving(false);
     }
@@ -573,7 +571,7 @@ export function UsersManagement() {
                   <TableHead className="min-w-[180px] sm:min-w-[200px]">{t('settings.contact')}</TableHead>
                   <TableHead className="min-w-[150px]">{t('settings.role')}</TableHead>
                   <TableHead className="min-w-[100px]">{t('common.status')}</TableHead>
-                  <TableHead className="min-w-[120px] sm:min-w-[150px]">{t('settings.lastLogin')}</TableHead>
+                  {/* <TableHead className="min-w-[120px] sm:min-w-[150px]">{t('settings.lastLogin')}</TableHead> */}
                   <TableHead className="text-right min-w-[80px]">{t('common.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
