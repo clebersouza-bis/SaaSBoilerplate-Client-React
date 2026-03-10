@@ -1,5 +1,4 @@
 // features/settings/components/SettingsPage.tsx - VERSÃO CORRIGIDA
-import * as React from 'react';
 import { useState, useEffect } from 'react';
 import {
   Settings as SettingsIcon,
@@ -8,7 +7,7 @@ import {
   Globe,
   Lock,
   Terminal,
-  Building2,
+  CreditCard,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -17,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { UsersManagement } from './UsersManagement';
 import { RolesManagement } from './RolesManagement';
 import { SystemSettings } from './SystemSettings';
+import { BillingPage } from '@/features/billing/components/BillingPage';
 import { useTranslation } from '@/hooks/useTranslation';
 import { cn } from '@/lib/utils';
 
@@ -48,6 +48,15 @@ const settingsSections = [
     bgColor: 'bg-orange-500/10',
     activeBgColor: 'bg-orange-500/20',
   },
+  {
+    id: 'billing',
+    label: 'Billing',
+    icon: CreditCard,
+    description: 'Subscription, payment access and lifecycle actions',
+    iconColor: 'text-emerald-500',
+    bgColor: 'bg-emerald-500/10',
+    activeBgColor: 'bg-emerald-500/20',
+  },
 ];
 
 export function SettingsPage() {
@@ -64,6 +73,13 @@ export function SettingsPage() {
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  useEffect(() => {
+    const requestedTab = new URLSearchParams(window.location.search).get('tab');
+    if (requestedTab && settingsSections.some((section) => section.id === requestedTab)) {
+      setActiveTab(requestedTab);
+    }
   }, []);
 
   return (
@@ -107,7 +123,7 @@ export function SettingsPage() {
             <Card className="border-border bg-card/50 backdrop-blur-sm mb-6 shadow-sm">
               <CardContent className="p-4 lg:p-6">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                  <TabsList className="grid grid-cols-3 gap-3 bg-background p-2 rounded-lg">
+                  <TabsList className="grid grid-cols-4 gap-3 bg-background p-2 rounded-lg">
                     {settingsSections.map((section) => (
                       <TabsTrigger
                         key={section.id}
@@ -176,7 +192,7 @@ export function SettingsPage() {
           {isMobile && (
             <div className="mb-6">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid grid-cols-3 w-full bg-background p-1 rounded-lg mb-4">
+                <TabsList className="grid grid-cols-4 w-full bg-background p-1 rounded-lg mb-4">
                   {settingsSections.map((section) => (
                     <TabsTrigger
                       key={section.id}
@@ -243,6 +259,10 @@ export function SettingsPage() {
 
               <TabsContent value="system" className="m-0 data-[state=inactive]:hidden">
                 <SystemSettings />
+              </TabsContent>
+
+              <TabsContent value="billing" className="m-0 data-[state=inactive]:hidden">
+                <BillingPage />
               </TabsContent>
             </Tabs>
           </div>
