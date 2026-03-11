@@ -10,6 +10,7 @@ interface ErrorMessageOptions {
 
 interface ProblemDetailsLike {
   title?: string;
+  code?: string;
   detail?: string;
   message?: string;
   errors?: string[] | Record<string, string[]>;
@@ -28,6 +29,7 @@ export function extractApiErrorMessage(
   }
 
   const title = typeof data.title === 'string' ? data.title.trim() : '';
+  const code = typeof data.code === 'string' ? data.code.trim() : '';
   const detail = typeof data.detail === 'string' ? data.detail.trim() : '';
   const message = typeof data.message === 'string' ? data.message.trim() : '';
 
@@ -45,12 +47,14 @@ export function extractApiErrorMessage(
     }
   }
 
-  if (title && t && hasTranslation) {
-    const translationKey = `apiErrors.${title}`;
+  const businessCode = title || code;
+
+  if (businessCode && t && hasTranslation) {
+    const translationKey = `apiErrors.${businessCode}`;
     if (hasTranslation(translationKey)) {
       return t(translationKey);
     }
   }
 
-  return detail || message || title || fallbackMessage;
+  return detail || message || title || code || fallbackMessage;
 }

@@ -555,6 +555,8 @@
     "permissionsDescription": "Configure system permissions",
     "system": "System",
     "systemDescription": "System-wide configurations",
+    "billing": "Billing",
+    "billingDescription": "Manage subscription, payment access, and billing lifecycle",
     "integrations": "Integrations",
     "integrationsDescription": "Connect with external services",
     "comingSoon": "Coming Soon",
@@ -835,7 +837,20 @@
     "MISSING_REQUIRED_FIELDS": "Some required fields are missing. Please fill in all required fields and try again.",
     "INVALID_EMAIL_FORMAT": "The email address provided is not in a valid format. Please enter a valid email address.",
     "WEAK_PASSWORD": "The password provided does not meet the security requirements. Please choose a stronger password that includes uppercase letters, numbers, and special characters.",
-    "UNAUTHORIZED": "You do not have permission to perform this action. Please contact your administrator if you believe you should have access."
+    "UNAUTHORIZED": "You do not have permission to perform this action. Please contact your administrator if you believe you should have access.",
+    "BILLING_ONBOARDING_REQUIRED": "To continue, please complete your billing setup. This helps us keep your workspace active and secure.",
+    "BILLING_DUNNING_BLOCKED": "We could not process your latest payment and your grace period has ended. Update your payment method to restore access.",
+    "BILLING_PAST_DUE": "Your payment is pending. Please update your payment method before the grace period ends.",
+    "BILLING_ACCESS_BLOCKED": "Your subscription is currently blocked. Resolve your billing status to continue using operational modules.",
+    "BILLING_ACCESS_REQUIRED": "Billing access is required before you can continue in operational modules."
+  },
+  "billingGate": {
+    "criticalTitle": "Action required on billing",
+    "warningTitle": "Billing attention needed",
+    "subtitle": "Some modules are temporarily limited until billing is resolved.",
+    "defaultDescription": "Your subscription needs attention before you can continue.",
+    "gracePeriodEnds": "Grace period ends on {{date}}.",
+    "goToBilling": "Go to billing"
   },
   "subscription": {
     "tagline": "AI-Powered Hotel Operations",

@@ -50,18 +50,22 @@ const settingsSections = [
   },
   {
     id: 'billing',
-    label: 'Billing',
+    label: 'settings.billing',
     icon: CreditCard,
-    description: 'Subscription, payment access and lifecycle actions',
+    description: 'settings.billingDescription',
     iconColor: 'text-emerald-500',
     bgColor: 'bg-emerald-500/10',
     activeBgColor: 'bg-emerald-500/20',
   },
 ];
 
-export function SettingsPage() {
+interface SettingsPageProps {
+  initialTab?: string;
+}
+
+export function SettingsPage({ initialTab = 'users' }: SettingsPageProps) {
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState('users');
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [isMobile, setIsMobile] = useState(false);
 
   // Detectar se é mobile
@@ -80,7 +84,7 @@ export function SettingsPage() {
     if (requestedTab && settingsSections.some((section) => section.id === requestedTab)) {
       setActiveTab(requestedTab);
     }
-  }, []);
+  }, [initialTab]);
 
   return (
     <div className="min-h-screen bg-background">

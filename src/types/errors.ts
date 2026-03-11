@@ -8,3 +8,13 @@ export interface PermissionErrorEvent {
   method?: string;
   timestamp: string;
 }
+
+export interface BillingAccessBlockedEvent {
+  status: number;
+  code?: string;
+  message: string;
+  subscriptionStatus?: string;
+  gracePeriodEndsUtc?: string;
+  allowed?: string[];
+  timestamp: string;
+}
