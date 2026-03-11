@@ -621,6 +621,8 @@
     "noDescription": "Sem descrição",
     "system": "Sistema",
     "systemDescription": "Configurações gerais do sistema",
+    "billing": "Faturamento",
+    "billingDescription": "Gerencie assinatura, acesso de pagamentos e ciclo de faturamento",
     "systemHealth": "Saúde do Sistema",
     "integrations": "Integrações",
     "integrationsDescription": "Gerencie integrações com outros sistemas",
@@ -707,7 +709,20 @@
     "EMAIL_USED_IN_OTHER_SUBSCRIPTION": "Este email já está associado a outra assinatura. Por favor, use um endereço de email diferente ou entre em contato com o suporte para obter assistência.",
     "USER_ALREADY_EXISTS_IN_COMPANY": "Este usuário já existe na empresa. Por favor, reative o usuário ou use um endereço de email diferente ou entre em contato com o suporte se você acredita que isso é um erro.",
     "DEFAULT_ROLE_UPDATE_FORBIDDEN": "Não é permitido atualizar a função padrão do sistema. Crie uma nova função personalizada com os acessos desejados para atribuir aos usuários.",
-    "DEFAULT_ROLE_DELETE_FORBIDDEN": "Não é permitido excluir a função padrão do sistema. Crie uma nova função personalizada com os acessos desejados para atribuir aos usuários."
+    "DEFAULT_ROLE_DELETE_FORBIDDEN": "Não é permitido excluir a função padrão do sistema. Crie uma nova função personalizada com os acessos desejados para atribuir aos usuários.",
+    "BILLING_ONBOARDING_REQUIRED": "Para continuar, conclua a configuração de faturamento. Isso mantém seu ambiente ativo e seguro.",
+    "BILLING_DUNNING_BLOCKED": "Não conseguimos processar seu último pagamento e o período de tolerância terminou. Atualize sua forma de pagamento para restaurar o acesso.",
+    "BILLING_PAST_DUE": "Seu pagamento está pendente. Atualize a forma de pagamento antes do fim do período de tolerância.",
+    "BILLING_ACCESS_BLOCKED": "Sua assinatura está bloqueada no momento. Resolva o status de faturamento para continuar usando os módulos operacionais.",
+    "BILLING_ACCESS_REQUIRED": "O acesso de faturamento é necessário antes de continuar nos módulos operacionais."
+  },
+  "billingGate": {
+    "criticalTitle": "Ação necessária no faturamento",
+    "warningTitle": "Atenção ao faturamento",
+    "subtitle": "Alguns módulos estão temporariamente limitados até regularizar o faturamento.",
+    "defaultDescription": "Sua assinatura precisa de atenção antes de continuar.",
+    "gracePeriodEnds": "O período de tolerância termina em {{date}}.",
+    "goToBilling": "Ir para faturamento"
   },
   "subscription": {
     "tagline": "Operações Hoteleiras com IA",

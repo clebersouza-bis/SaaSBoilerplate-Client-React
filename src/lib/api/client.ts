@@ -1,7 +1,7 @@
 // lib/api/client.ts
 import axios from 'axios';
 import { toast } from '@/hooks/use-toast';
-import { PermissionErrorEvent } from '@/types/errors';
+import { BillingAccessBlockedEvent, PermissionErrorEvent } from '@/types/errors';
 import { extractApiErrorMessage } from '@/lib/api/error-utils';
 import { inferActionFromMethod, inferResourceFromUrl } from '@/lib/api/permission-utils';
 
@@ -64,6 +64,29 @@ const emitPermissionError = (errorData: {
   window.dispatchEvent(event);
 };
 
+const emitBillingAccessBlocked = (errorData: {
+  status: number;
+  code?: string;
+  message: string;
+  subscriptionStatus?: string;
+  gracePeriodEndsUtc?: string;
+  allowed?: string[];
+}) => {
+  const event = new CustomEvent<BillingAccessBlockedEvent>('billingAccessBlocked', {
+    detail: {
+      status: errorData.status,
+      code: errorData.code,
+      message: errorData.message,
+      subscriptionStatus: errorData.subscriptionStatus,
+      gracePeriodEndsUtc: errorData.gracePeriodEndsUtc,
+      allowed: errorData.allowed,
+      timestamp: new Date().toISOString(),
+    },
+  });
+
+  window.dispatchEvent(event);
+};
+
 // Request interceptor
 api.interceptors.request.use(
   (config) => {
@@ -112,6 +135,23 @@ api.interceptors.response.use(
     // Não mostrar toast para erros de permissão se estamos mostrando modal
     if (status === 403 && !skipPermissionModal) {
       // Não mostrar toast, apenas retornar o erro
+      return Promise.reject(error);
+    }
+
+    if (status === 402) {
+      const errorMessage = extractApiErrorMessage(error, {
+        fallbackMessage: 'Billing access is required.',
+      });
+
+      emitBillingAccessBlocked({
+        status: 402,
+        code: error.response?.data?.code,
+        message: errorMessage,
+        subscriptionStatus: error.response?.data?.subscriptionStatus,
+        gracePeriodEndsUtc: error.response?.data?.gracePeriodEndsUtc,
+        allowed: error.response?.data?.allowed,
+      });
+
       return Promise.reject(error);
     }
 

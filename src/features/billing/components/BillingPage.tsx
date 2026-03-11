@@ -27,8 +27,8 @@ import {
 } from '@/features/billing/hooks/useBilling';
 import type { BillingActionResponse } from '@/features/billing/api/types';
 
-const BILLING_SUCCESS_URL = `${window.location.origin}/settings?tab=billing&checkout=success`;
-const BILLING_CANCEL_URL = `${window.location.origin}/settings?tab=billing&checkout=cancel`;
+const BILLING_SUCCESS_URL = `${window.location.origin}/settings/billing?checkout=success`;
+const BILLING_CANCEL_URL = `${window.location.origin}/settings/billing?checkout=cancel`;
 
 type BillingActionType = 'cancel' | 'pause' | 'resume' | 'unpause' | 'reactivate';
 

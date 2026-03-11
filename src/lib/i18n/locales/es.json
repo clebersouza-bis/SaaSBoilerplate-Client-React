@@ -617,6 +617,8 @@
     "selectAll": "Seleccionar Todos",
     "noDescription": "Sin descripción",
     "systemDescription": "Configuraciones generales del sistema",
+    "billing": "Facturación",
+    "billingDescription": "Gestiona suscripción, acceso de pagos y ciclo de facturación",
     "systemHealth": "Salud del Sistema",
     "integrations": "Integraciones",
     "integrationsDescription": "Gestionar integraciones con otros sistemas",
@@ -703,7 +705,20 @@
     "EMAIL_USED_IN_OTHER_SUBSCRIPTION": "Este correo electrónico ya está asociado con otra suscripción. Por favor, use una dirección de correo diferente o póngase en contacto con el soporte para obtener ayuda.",
     "USER_ALREADY_EXISTS_IN_COMPANY": "Este usuario ya existe en la empresa. Por favor, reactiva el usuario o usa una dirección de correo diferente o contacta con el soporte si crees que esto es un error.",
     "DEFAULT_ROLE_UPDATE_FORBIDDEN": "No se puede actualizar el rol predeterminado del sistema. Cree un nuevo rol personalizado con los permisos deseados para asignar a los usuarios.",
-    "DEFAULT_ROLE_DELETE_FORBIDDEN": "Los roles del sistema predeterminados no pueden ser eliminados."
+    "DEFAULT_ROLE_DELETE_FORBIDDEN": "Los roles del sistema predeterminados no pueden ser eliminados.",
+    "BILLING_ONBOARDING_REQUIRED": "Para continuar, completa la configuración de facturación. Esto mantiene tu espacio activo y seguro.",
+    "BILLING_DUNNING_BLOCKED": "No pudimos procesar tu último pago y el período de gracia terminó. Actualiza tu método de pago para restaurar el acceso.",
+    "BILLING_PAST_DUE": "Tu pago está pendiente. Actualiza tu método de pago antes de que finalice el período de gracia.",
+    "BILLING_ACCESS_BLOCKED": "Tu suscripción está bloqueada actualmente. Resuelve el estado de facturación para continuar usando los módulos operativos.",
+    "BILLING_ACCESS_REQUIRED": "Se requiere acceso de facturación antes de continuar en los módulos operativos."
+  },
+  "billingGate": {
+    "criticalTitle": "Se requiere acción en facturación",
+    "warningTitle": "Atención de facturación necesaria",
+    "subtitle": "Algunos módulos están limitados temporalmente hasta regularizar la facturación.",
+    "defaultDescription": "Tu suscripción requiere atención antes de continuar.",
+    "gracePeriodEnds": "El período de gracia finaliza el {{date}}.",
+    "goToBilling": "Ir a facturación"
   },
   "subscription": {
     "tagline": "Operaciones Hoteleras con IA",

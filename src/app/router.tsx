@@ -130,6 +130,18 @@ const settingsRoute = createRoute({
   ),
 });
 
+const settingsBillingRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/settings/billing',
+  component: () => (
+    <ProtectedRoute requiredPermissions={['settings.view']}>
+      <AppLayout>
+        <SettingsPage initialTab="billing" />
+      </AppLayout>
+    </ProtectedRoute>
+  ),
+});
+
 // Create route tree
 const routeTree = rootRoute.addChildren([
   loginRoute,
@@ -141,6 +153,7 @@ const routeTree = rootRoute.addChildren([
   forgotPasswordRoute,
   resetPasswordRoute,
   settingsRoute,
+  settingsBillingRoute,
   verifyEmailPage,
   profileRoute,
   inviteConfirmationPage,
