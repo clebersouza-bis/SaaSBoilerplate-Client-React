@@ -745,5 +745,203 @@
     "USER_ALREADY_EXISTS_IN_COMPANY": "Este usuario ya existe en la empresa. Por favor, reactiva el usuario o usa una dirección de correo diferente o contacta con el soporte si crees que esto es un error.",
     "DEFAULT_ROLE_UPDATE_FORBIDDEN": "No se puede actualizar el rol predeterminado del sistema. Cree un nuevo rol personalizado con los permisos deseados para asignar a los usuarios.",
     "DEFAULT_ROLE_DELETE_FORBIDDEN": "Los roles del sistema predeterminados no pueden ser eliminados."
+  },
+  "subscription":{
+  "tagline": "Choose your path to operational excellence",
+  "title": "Simple, Transparent Pricing",
+  "subtitle": "Scale your operations with AI-powered housekeeping. No hidden fees, cancel anytime.",
+  
+  "monthly": "Monthly",
+  "quarterly": "Quarterly",
+  "semiannual": "Semi-Annual",
+  "annual": "Annual",
+  "rooms": "Rooms",
+  "room": "room",
+  "month": "mo",
+  
+  "mostPopular": "Most Popular",
+  "selected": "Selected",
+  "select": "Select Plan",
+  "yourPrice": "Your price",
+  "setup": "Setup",
+  "free": "Free",
+  "minimum": "Minimum monthly",
+  "minimumRequired": "Minimum monthly of {{amount}} required",
+  
+  "comparison": "Feature Comparison",
+  "comparisonDescription": "See how our plans stack up against each other",
+  
+  "register": "Start Your Subscription",
+  "registerDescription": "Fill in your details to get started with ELYON",
+  "companyName": "Company Name",
+  "companyEmail": "Business Email",
+  "companyPhone": "Phone Number",
+  "selectedPlan": "Selected Plan",
+  "billingCycle": "Billing Cycle",
+  "promoCode": "Promo Code (optional)",
+  
+  "summary": "Price Summary",
+  "basePrice": "Base price",
+  "discount": "Discount",
+  "monthlyTotal": "Monthly total",
+  "setupFee": "Setup fee",
+  "firstYear": "First year total",
+  
+  "agreeTerms": "I agree to the",
+  "termsOfService": "Terms of Service",
+  "and": "and",
+  "privacyPolicy": "Privacy Policy",
+  "proceedToCheckout": "Proceed to Checkout",
+  "talkToSales": "Talk to Sales",
+  
+  "testimonials": "Trusted by leading hotels",
+  "faq": "Frequently Asked Questions",
+  
+  "faq1": {
+    "title": "Can I change plans later?",
+    "content": "Yes, you can upgrade or downgrade your plan at any time. Changes will be reflected in your next billing cycle."
+  },
+  "faq2": {
+    "title": "Is there a long-term contract?",
+    "content": "No, all plans are month-to-month with no long-term commitment required. Annual plans offer a 20% discount."
+  },
+  "faq3": {
+    "title": "What payment methods do you accept?",
+    "content": "We accept all major credit cards, wire transfers, and can accommodate net terms for enterprise clients."
+  },
+  "faq4": {
+    "title": "Do you offer training and support?",
+    "content": "Yes, all plans include onboarding support. Enterprise plans include dedicated account management and 24/7 priority support."
+  },
+  
+  "contactSales": "Contact Sales",
+  "contactSalesDescription": "Our team is ready to help you find the perfect solution",
+  "callUs": "Call us",
+  "emailUs": "Email us",
+  "scheduleDemo": "Schedule a demo",
+  "scheduleDemoDescription": "Book a personalized demo with our team"
+  },
+  "subscription": {
+    "tagline": "Operaciones Hoteleras con IA",
+    "title": "Transforma tus Operaciones Hoteleras con IA",
+    "subtitle": "Elige el plan perfecto para tu propiedad y comienza a optimizar tu housekeeping hoy mismo",
+    "numberOfRooms": "Número de Habitaciones",
+    "roomsDescription": "Ajusta el número de habitaciones para calcular tu precio exacto",
+    "monthly": "Mensual",
+    "annual": "Anual",
+    "save": "Ahorra {{percent}}%",
+    "mostPopular": "MÁS POPULAR",
+    "enterprise": "EMPRESARIAL",
+    "perRoomMonth": "/habitación/mes",
+    "yourPrice": "Tu Precio",
+    "perMonth": "/mes",
+    "minimumRequired": "Mínimo mensual requerido: {{amount}}",
+    "setup": "Configuración",
+    "free": "GRATIS",
+    "minimum": "Mínimo",
+    "selected": "Seleccionado",
+    "clickToSelect": "Clic para seleccionar",
+    "createAccount": "Crea tu Cuenta",
+    "createAccountDescription": "Completa tu información para comenzar con ELYON",
+    "promoCode": "Código Promocional",
+    "selectedPlan": "Plan Seleccionado",
+    "priceSummary": "Resumen de Precios",
+    "basePrice": "Precio base",
+    "discount": "Descuento ({{percent}}%)",
+    "monthlyTotal": "Total Mensual",
+    "setupFee": "Tarifa de configuración",
+    "firstYearTotal": "Total primer año",
+    "registerNow": "Registrarse Ahora",
+    "talkToSales": "Hablar con Ventas",
+    "contactSales": "Contactar Ventas",
+    "contactSalesDescription": "Nuestro equipo de ventas está listo para ayudarte a encontrar la solución perfecta",
+    "callUs": "Llámanos",
+    "emailUs": "Envíanos un correo",
+    "scheduleDemo": "Agenda una Demostración",
+    "scheduleDemoDescription": "Reserva una demostración personalizada con nuestros especialistas",
+    "registrationSuccess": "¡Registro Exitoso!",
+    "registrationSuccessMessage": "Tu cuenta ha sido creada. Por favor, verifica tu correo electrónico para confirmar tu cuenta.",
+    "plans": {
+      "core": {
+        "description": "Gestión de housekeeping esencial para propiedades pequeñas",
+        "setupDescription": "Configuración self-service incluida"
+      },
+      "autopilot": {
+        "description": "Automatización con IA para hoteles en crecimiento",
+        "setupDescription": "Incluye configuración de IA y entrenamiento del equipo"
+      },
+      "vision": {
+        "description": "Análisis avanzados y gestión multi-propiedad",
+        "setupDescription": "Implementación personalizada y soporte dedicado"
+      }
+    },
+    "features": {
+      "housekeepingApp": "App de Housekeeping",
+      "effortPoints": "Sistema de Puntos de Esfuerzo",
+      "maintenanceLog": "Registro de Mantenimiento Digital",
+      "realTimeDashboard": "Panel en Tiempo Real",
+      "aiDispatch": "Despacho con IA",
+      "guestMessaging": "Mensajes para Huéspedes",
+      "shiftForecast": "Pronóstico de Turnos",
+      "multiProperty": "Gestión Multi-Propiedad",
+      "allCore": "Todas las funciones Core",
+      "aiTriage": "Triaje con IA",
+      "guestPortal": "Portal del Huésped",
+      "aiRiskEngine": "Motor de Riesgo con IA",
+      "operationalTimeline": "Línea de Tiempo Operacional",
+      "allAutopilot": "Todas las funciones Autopilot",
+      "aiShiftFeasibility": "Viabilidad de Turnos con IA",
+      "multiPropertyDashboard": "Panel Multi-Propiedad",
+      "hapiIntegration": "Integración HAPI",
+      "advancedReports": "Informes Avanzados",
+      "prioritySupport": "Soporte Prioritario",
+      "staffAnalytics": "Análisis de Personal"
+    },
+    "tooltips": {
+      "aiDispatch": "IA asigna automáticamente tareas al personal de housekeeping",
+      "guestMessaging": "Envía mensajes automáticos a huéspedes vía SMS/WhatsApp",
+      "shiftForecast": "Predice necesidades de personal basado en ocupación",
+      "multiProperty": "Gestiona múltiples propiedades desde un solo panel"
+    }
+  },
+  "auth": {
+    "signIn": "Iniciar Sesión",
+    "backToLogin": "Volver al Login",
+    "fullName": "Nombre Completo",
+    "optional": "opcional",
+    "fullNamePlaceholder": "Juan Pérez",
+    "companyName": "Nombre de la Empresa",
+    "companyPlaceholder": "Hotel Paraíso",
+    "businessEmail": "Correo Corporativo",
+    "emailPlaceholder": "tu@empresa.com",
+    "phoneNumber": "Teléfono",
+    "password": "Contraseña",
+    "confirmPassword": "Confirmar Contraseña",
+    "passwordStrength": "Fortaleza de la contraseña",
+    "weak": "débil",
+    "medium": "media",
+    "strong": "fuerte",
+    "minCharacters": "Mínimo {{count}} caracteres",
+    "uppercaseLetter": "Letra mayúscula",
+    "lowercaseLetter": "Letra minúscula",
+    "number": "Número",
+    "specialCharacter": "Carácter especial",
+    "passwordsMatch": "Las contraseñas coinciden",
+    "passwordsDontMatch": "Las contraseñas no coinciden",
+    "agreeToTerms": "Acepto los",
+    "termsOfService": "Términos de Servicio",
+    "privacyPolicy": "Política de Privacidad",
+    "creatingAccount": "Creando cuenta...",
+    "allFieldsRequired": "Todos los campos obligatorios deben estar completos",
+    "passwordTooWeak": "Contraseña demasiado débil",
+    "agreeToTermsRequired": "Debes aceptar los términos",
+    "redirectingToLogin": "Redirigiendo al login...",
+    "optional": "opcional"
+  },
+  "common": {
+    "and": "y",
+    "allRightsReserved": "Todos los derechos reservados.",
+    "support": "Soporte",
+    "errorSaving": "Ocurrió un error al guardar. Por favor, inténtalo de nuevo."
   }
 }

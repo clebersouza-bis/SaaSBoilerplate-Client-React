@@ -14,6 +14,7 @@ import { VerifyEmailPage } from '@/features/auth/components/VerifyEmailPage';
 import { ProfilePage } from '@/features/auth/components/ProfilePage';
 import { CustomerDetailsPage } from '@/features/customers/components/CustomerDetailsPage';
 import { InviteConfirmationPage } from '@/features/auth/components/InviteConfirmationPage';
+import { SubscriptionPage } from '@/features/subscription/components/SubscriptionPage';
 
 // Root route
 const rootRoute = createRootRoute();
@@ -29,6 +30,12 @@ const registerRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/register',
   component: RegisterForm,
+});
+
+const subscriptionRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/subscription',
+  component: SubscriptionPage,
 });
 
 const forgotPasswordRoute = createRoute({
@@ -127,6 +134,7 @@ const settingsRoute = createRoute({
 const routeTree = rootRoute.addChildren([
   loginRoute,
   registerRoute,
+  subscriptionRoute,
   dashboardRoute,
   customersRoute,
   customerDetailsRoute,

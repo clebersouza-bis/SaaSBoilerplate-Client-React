@@ -744,5 +744,203 @@
     "USER_ALREADY_EXISTS_IN_COMPANY": "Este usuário já existe na empresa. Por favor, reative o usuário ou use um endereço de email diferente ou entre em contato com o suporte se você acredita que isso é um erro.",
     "DEFAULT_ROLE_UPDATE_FORBIDDEN": "Não é permitido atualizar a função padrão do sistema. Crie uma nova função personalizada com os acessos desejados para atribuir aos usuários.",
     "DEFAULT_ROLE_DELETE_FORBIDDEN": "Não é permitido excluir a função padrão do sistema. Crie uma nova função personalizada com os acessos desejados para atribuir aos usuários."
+  },
+  "subscription":{
+  "tagline": "Choose your path to operational excellence",
+  "title": "Simple, Transparent Pricing",
+  "subtitle": "Scale your operations with AI-powered housekeeping. No hidden fees, cancel anytime.",
+  
+  "monthly": "Monthly",
+  "quarterly": "Quarterly",
+  "semiannual": "Semi-Annual",
+  "annual": "Annual",
+  "rooms": "Rooms",
+  "room": "room",
+  "month": "mo",
+  
+  "mostPopular": "Most Popular",
+  "selected": "Selected",
+  "select": "Select Plan",
+  "yourPrice": "Your price",
+  "setup": "Setup",
+  "free": "Free",
+  "minimum": "Minimum monthly",
+  "minimumRequired": "Minimum monthly of {{amount}} required",
+  
+  "comparison": "Feature Comparison",
+  "comparisonDescription": "See how our plans stack up against each other",
+  
+  "register": "Start Your Subscription",
+  "registerDescription": "Fill in your details to get started with ELYON",
+  "companyName": "Company Name",
+  "companyEmail": "Business Email",
+  "companyPhone": "Phone Number",
+  "selectedPlan": "Selected Plan",
+  "billingCycle": "Billing Cycle",
+  "promoCode": "Promo Code (optional)",
+  
+  "summary": "Price Summary",
+  "basePrice": "Base price",
+  "discount": "Discount",
+  "monthlyTotal": "Monthly total",
+  "setupFee": "Setup fee",
+  "firstYear": "First year total",
+  
+  "agreeTerms": "I agree to the",
+  "termsOfService": "Terms of Service",
+  "and": "and",
+  "privacyPolicy": "Privacy Policy",
+  "proceedToCheckout": "Proceed to Checkout",
+  "talkToSales": "Talk to Sales",
+  
+  "testimonials": "Trusted by leading hotels",
+  "faq": "Frequently Asked Questions",
+  
+  "faq1": {
+    "title": "Can I change plans later?",
+    "content": "Yes, you can upgrade or downgrade your plan at any time. Changes will be reflected in your next billing cycle."
+  },
+  "faq2": {
+    "title": "Is there a long-term contract?",
+    "content": "No, all plans are month-to-month with no long-term commitment required. Annual plans offer a 20% discount."
+  },
+  "faq3": {
+    "title": "What payment methods do you accept?",
+    "content": "We accept all major credit cards, wire transfers, and can accommodate net terms for enterprise clients."
+  },
+  "faq4": {
+    "title": "Do you offer training and support?",
+    "content": "Yes, all plans include onboarding support. Enterprise plans include dedicated account management and 24/7 priority support."
+  },
+  
+  "contactSales": "Contact Sales",
+  "contactSalesDescription": "Our team is ready to help you find the perfect solution",
+  "callUs": "Call us",
+  "emailUs": "Email us",
+  "scheduleDemo": "Schedule a demo",
+  "scheduleDemoDescription": "Book a personalized demo with our team"
+  },
+  "subscription": {
+    "tagline": "Operações Hoteleiras com IA",
+    "title": "Transforme suas Operações Hoteleiras com IA",
+    "subtitle": "Escolha o plano perfeito para sua propriedade e comece a otimizar sua governança hoje mesmo",
+    "numberOfRooms": "Número de Quartos",
+    "roomsDescription": "Ajuste o número de quartos para calcular seu preço exato",
+    "monthly": "Mensal",
+    "annual": "Anual",
+    "save": "Economize {{percent}}%",
+    "mostPopular": "MAIS POPULAR",
+    "enterprise": "EMPRESARIAL",
+    "perRoomMonth": "/quarto/mês",
+    "yourPrice": "Seu Preço",
+    "perMonth": "/mês",
+    "minimumRequired": "Mínimo mensal exigido: {{amount}}",
+    "setup": "Configuração",
+    "free": "GRÁTIS",
+    "minimum": "Mínimo",
+    "selected": "Selecionado",
+    "clickToSelect": "Clique para selecionar",
+    "createAccount": "Crie sua Conta",
+    "createAccountDescription": "Preencha suas informações para começar com a ELYON",
+    "promoCode": "Código Promocional",
+    "selectedPlan": "Plano Selecionado",
+    "priceSummary": "Resumo de Preços",
+    "basePrice": "Preço base",
+    "discount": "Desconto ({{percent}}%)",
+    "monthlyTotal": "Total Mensal",
+    "setupFee": "Taxa de configuração",
+    "firstYearTotal": "Total primeiro ano",
+    "registerNow": "Registrar Agora",
+    "talkToSales": "Falar com Vendas",
+    "contactSales": "Contatar Vendas",
+    "contactSalesDescription": "Nossa equipe de vendas está pronta para ajudar você a encontrar a solução perfeita",
+    "callUs": "Ligue para nós",
+    "emailUs": "Envie um e-mail",
+    "scheduleDemo": "Agende uma Demonstração",
+    "scheduleDemoDescription": "Marque uma demonstração personalizada com nossos especialistas",
+    "registrationSuccess": "Registro Realizado com Sucesso!",
+    "registrationSuccessMessage": "Sua conta foi criada. Por favor, verifique seu e-mail para confirmar sua conta.",
+    "plans": {
+      "core": {
+        "description": "Gestão de governança essencial para pequenas propriedades",
+        "setupDescription": "Configuração self-service incluída"
+      },
+      "autopilot": {
+        "description": "Automação com IA para hotéis em crescimento",
+        "setupDescription": "Inclui configuração de IA e treinamento da equipe"
+      },
+      "vision": {
+        "description": "Análises avançadas e gestão multi-propriedade",
+        "setupDescription": "Implementação personalizada e suporte dedicado"
+      }
+    },
+    "features": {
+      "housekeepingApp": "App de Governança",
+      "effortPoints": "Sistema de Pontos de Esforço",
+      "maintenanceLog": "Registro de Manutenção Digital",
+      "realTimeDashboard": "Painel em Tempo Real",
+      "aiDispatch": "Despacho com IA",
+      "guestMessaging": "Mensagens para Hóspedes",
+      "shiftForecast": "Previsão de Turnos",
+      "multiProperty": "Gestão Multi-Propriedade",
+      "allCore": "Todos os recursos Core",
+      "aiTriage": "Triagem com IA",
+      "guestPortal": "Portal do Hóspede",
+      "aiRiskEngine": "Mecanismo de Risco com IA",
+      "operationalTimeline": "Linha do Tempo Operacional",
+      "allAutopilot": "Todos os recursos Autopilot",
+      "aiShiftFeasibility": "Viabilidade de Turnos com IA",
+      "multiPropertyDashboard": "Painel Multi-Propriedade",
+      "hapiIntegration": "Integração HAPI",
+      "advancedReports": "Relatórios Avançados",
+      "prioritySupport": "Suporte Prioritário",
+      "staffAnalytics": "Análise de Equipe"
+    },
+    "tooltips": {
+      "aiDispatch": "IA atribui automaticamente tarefas à equipe de governança",
+      "guestMessaging": "Envie mensagens automáticas para hóspedes via SMS/WhatsApp",
+      "shiftForecast": "Preveja necessidades de equipe com base na ocupação",
+      "multiProperty": "Gerencie múltiplas propriedades de um único painel"
+    }
+  },
+  "auth": {
+    "signIn": "Entrar",
+    "backToLogin": "Voltar ao Login",
+    "fullName": "Nome Completo",
+    "optional": "opcional",
+    "fullNamePlaceholder": "João Silva",
+    "companyName": "Nome da Empresa",
+    "companyPlaceholder": "Hotel Paraíso",
+    "businessEmail": "E-mail Corporativo",
+    "emailPlaceholder": "voce@empresa.com",
+    "phoneNumber": "Telefone",
+    "password": "Senha",
+    "confirmPassword": "Confirmar Senha",
+    "passwordStrength": "Força da senha",
+    "weak": "fraca",
+    "medium": "média",
+    "strong": "forte",
+    "minCharacters": "Mínimo {{count}} caracteres",
+    "uppercaseLetter": "Letra maiúscula",
+    "lowercaseLetter": "Letra minúscula",
+    "number": "Número",
+    "specialCharacter": "Caractere especial",
+    "passwordsMatch": "Senhas coincidem",
+    "passwordsDontMatch": "Senhas não coincidem",
+    "agreeToTerms": "Eu concordo com os",
+    "termsOfService": "Termos de Serviço",
+    "privacyPolicy": "Política de Privacidade",
+    "creatingAccount": "Criando conta...",
+    "allFieldsRequired": "Todos os campos obrigatórios devem ser preenchidos",
+    "passwordTooWeak": "Senha muito fraca",
+    "agreeToTermsRequired": "Você deve concordar com os termos",
+    "redirectingToLogin": "Redirecionando para o login...",
+    "optional": "opcional"
+  },
+  "common": {
+    "and": "e",
+    "allRightsReserved": "Todos os direitos reservados.",
+    "support": "Suporte",
+    "errorSaving": "Ocorreu um erro ao salvar. Por favor, tente novamente."
   }
 }
